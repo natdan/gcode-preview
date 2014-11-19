@@ -1,4 +1,11 @@
+//
+// This shader is based on lighting.vertex.glsl from LibGDX code.
+// Only difference is that in main() it changes v_color in the last moment to one depending on 
+// u_number
+//
 #define nop() {}
+
+uniform int u_number;
 
 ////////////////////////////////////////////////////////////////////////////////////
 ////////// POSITION ATTRIBUTE - VERTEX
@@ -26,7 +33,6 @@ vec4 g_position = vec4(0.0, 0.0, 0.0, 1.0);
 attribute vec4 a_color;
 #endif //colorFlag
 
-uniform int u_number;
 varying vec4 v_color;
 #define pushColorValue(value) (v_color = (value))
 #if defined(colorFlag)

@@ -285,11 +285,10 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
                 gCodeModel.processNextLayer();
             }
         }
-
         playPanel.setVisible(true);
         playPanel.clear();
         playPanel.text("Creating meshes for layers", 0);
-        playPanel.text(controller.getCurrentLayerNo() + "/" + gCodeModel.getLayers().size(), 1);
+        playPanel.text(gCodeModel.getCurrentLayerNo() + "/" + gCodeModel.getLayers().size(), 1);
     }
     
     @Override

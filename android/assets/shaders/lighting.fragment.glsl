@@ -1,3 +1,6 @@
+//
+// This shader is based on lighting.fragment.glsl from LibGDX code.
+//
 #ifdef GL_ES
 #define LOWP lowp
 #define MED mediump

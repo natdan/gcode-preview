@@ -33,10 +33,10 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 public class Controller implements InputProcessor {
 
     public static enum Mode {
-        DisplayAll, CycleThroughLayers, Play, TwoD;
+        Loading, DisplayAll, CycleThroughLayers, Play, TwoD;
     }
 
-    private Mode mode = Mode.DisplayAll;
+    private Mode mode = Mode.Loading;
 
     private GCodeModel gCodeModel;
     private GCodePreviewWindow window;
@@ -163,16 +163,12 @@ public class Controller implements InputProcessor {
             sceneCameraInputController.setThreeDimensions();
             startPlaying();
             return true;
-        } else if (character == 'a') {
+        } else if (character == '3' || character == 'a') {
             sceneCameraInputController.setThreeDimensions();
             displayAll();
             return true;
         } else if (character == '2') {
             setTwoDView();
-            return true;
-        } else if (character == '3') {
-            sceneCameraInputController.setThreeDimensions();
-            displayAll();
             return true;
         } else if (character == 'h') {
             if (!console.isVisible()) {
@@ -245,6 +241,7 @@ public class Controller implements InputProcessor {
     }
     
     public void render(Camera camera, Environment environment) {
+        Panel playPanel = window.getPlayPanel();
         List<Layer> layers = gCodeModel.getLayers();
         if (mode == Mode.CycleThroughLayers)  {
             if (!paused) {
@@ -270,31 +267,30 @@ public class Controller implements InputProcessor {
             
         } else if (mode == Mode.Play) {
             if (!paused) {
-                
                 if (lastPlayed > 0) {
                     playerRenderer.setCurrentLayer(null);
                     long now = System.currentTimeMillis();
                     if (now - lastPlayed > timeoutBeforeResun) {
                         currentLayerNo = 0;
-                        playerRenderer.setCurrentInstructionNo(0);
                         lastPlayed = 0;
                         if (!layers.isEmpty()) {
                             playerRenderer.setCurrentLayer(layers.get(0));
                         }
+                        playerRenderer.setCurrentInstructionNo(0);
                     }
                 } else {
                     if (playerRenderer.getCurrentLayer() != null) {
-                        playerRenderer.setCurrentInstructionNo(playerRenderer.getCurrentInstructionNo() + instructionsSpeed);
                         if (playerRenderer.getCurrentInstructionNo() >= playerRenderer.getCurrentLayer().getNumberOfInstructions()) {
                             currentLayerNo = currentLayerNo + 1;
                             if (currentLayerNo >= layers.size()) {
                                 lastPlayed = System.currentTimeMillis();
                                 playerRenderer.setCurrentLayer(null);
                             } else {
-                                playerRenderer.setCurrentInstructionNo(0);
                                 setCurrentLayer(currentLayerNo);
+                                playerRenderer.setCurrentInstructionNo(0);
                             }
                         }
+                        playerRenderer.setCurrentInstructionNo(playerRenderer.getCurrentInstructionNo() + instructionsSpeed);
                     }
                 }
             }
@@ -305,8 +301,15 @@ public class Controller implements InputProcessor {
         } else {
             playerRenderer.renderSolid(camera, environment, layers);
         }
-    }
 
+        if (mode != Mode.Loading) {
+            playPanel.clear();
+            playPanel.text("Layer: " + Integer.toString(getCurrentLayerNo() + 1) + "/" + gCodeModel.getLayers().size(), 0);
+            playPanel.text("Instr: " + Integer.toString(getCurrentInstructionNo()) + "/" + getCurrentInstructionMax(), 1);
+            playPanel.text("Speed: " + Integer.toString(getInsrtuctionsSpeed()), 2);
+        }
+    }
+    
     public void startCyclingThroughLayers() {
         startLayerNo = 0;
         currentLayerNo = 0;
@@ -315,12 +318,12 @@ public class Controller implements InputProcessor {
     }
 
     public void startPlaying() {
-        playerRenderer.setCurrentInstructionNo(0);
         currentLayerNo = 0;
         paused = false;
         if (!gCodeModel.getLayers().isEmpty()) {
             setCurrentLayer(0);
         }
+        playerRenderer.setCurrentInstructionNo(0);
         setMode(Mode.Play);
     }
     
@@ -346,16 +349,12 @@ public class Controller implements InputProcessor {
     
     protected void setMode(Mode mode) {
         this.mode = mode;
-        Panel playPanel = window.getPlayPanel();
-        if (mode == Mode.Play) {
-            playPanel.setVisible(true);
-            playPanel.clear();
-            playPanel.text("Layer: " + Integer.toString(getCurrentLayerNo()) + "/" + gCodeModel.getLayers().size(), 0);
-            playPanel.text("Instr: " + Integer.toString(getCurrentInstructionNo()) + "/" + getCurrentInstructionMax(), 1);
-            playPanel.text("Speed: " + Integer.toString(getInsrtuctionsSpeed()), 2);
-        } else {
-            playPanel.setVisible(false);
-        }
+//        Panel playPanel = window.getPlayPanel();
+//        if (mode == Mode.Play) {
+//            playPanel.setVisible(true);
+//        } else {
+//            playPanel.setVisible(false);
+//        }
     }
 
     public boolean isPaused() {
@@ -408,7 +407,15 @@ public class Controller implements InputProcessor {
             playerRenderer.setCurrentInstructionNo(horizontalSlider.getMax());
         }
         
-        verticalSlider.setMax(gCodeModel.getLayers().size());
+        int layersNumber = gCodeModel.getLayers().size();
+        if (layersNumber > 0) {
+            layersNumber = layersNumber - 1;
+            // Unike with instructions where '0' means - no instructions and max means last instruction
+            // for layers this means we count '0' as well as a layer. So max is last number slider
+            // can hold - and that is one less to exact numbers of layers. When displaying which layer
+            // is selected we will add one so screen has '1' based output... 
+        }
+        verticalSlider.setMax(layersNumber);
         verticalKnob.setPosition(layerNo);
     }
 }

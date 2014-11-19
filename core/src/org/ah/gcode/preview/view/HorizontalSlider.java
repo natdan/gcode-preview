@@ -65,13 +65,20 @@ public class HorizontalSlider extends Slider {
     public boolean receiveTouchDragged(int screenX, int screenY, int pointer) {
         int w = knobTexture.getWidth();
         int path = getWidth() - w;
+
         int pos = screenX - getX() - w / 2;
+
         if (pos < 0) {
             pos = 0;
         } else if (pos > path) {
             pos = path;
         }
-        getKnobs().get(0).setPosition(pos * getMax() / path);
+
+        if (pos == path) {
+            getKnobs().get(0).setPosition(getMax());
+        } else {
+            getKnobs().get(0).setPosition(pos * getMax() / path);
+        }
         return true;
     }
 

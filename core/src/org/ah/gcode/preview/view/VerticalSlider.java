@@ -75,7 +75,11 @@ public class VerticalSlider extends Slider {
         }
         pos = path - pos;
         
-        getKnobs().get(0).setPosition(pos * getMax() / path);
+        if (pos == path) {
+            getKnobs().get(0).setPosition(getMax());
+        } else {
+            getKnobs().get(0).setPosition(pos * getMax() / path);
+        }
         return true;
     }
 

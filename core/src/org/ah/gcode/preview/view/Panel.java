@@ -24,7 +24,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 
-public class Panel extends Component implements FlatView {
+public class Panel extends Component {
 
     public static enum Alignment {
         Left, Right, Center;

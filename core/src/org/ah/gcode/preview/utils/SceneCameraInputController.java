@@ -21,6 +21,14 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.Ray;
 
+/**
+ * This class is based on com.badlogic.gdx.graphics.g3d.utils.CameraInputController class.
+ * 
+ * Main difference is that rotating around in this class is done around point that
+ * is found intersecting ray when user clicked with background plane passed in.
+ * 
+ * @author daniel
+ */
 public class SceneCameraInputController {
 
     private Camera camera;
