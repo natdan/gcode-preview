@@ -1,23 +1,7 @@
 package org.ah.gcode.preview.view;
 
 
-public class HorizontalGroup extends Component {
-
-    private int margin;
-
-    public int getMargin() {
-        return margin;
-    }
-
-    public void setMargin(int margin) {
-        this.margin = margin;
-    }
-
-    @Override
-    public void addChild(Component component) {
-        getChildren().add(component);
-        component.setParent(this);
-    }
+public class HorizontalGroup extends Group {
 
     @Override
     public void doLayout() {
@@ -32,7 +16,7 @@ public class HorizontalGroup extends Component {
             if (component.isVisible()) {
                 component.setX(getX() + width);
                 component.setY(getY());
-                width = width + component.getWidth() + margin;
+                width = width + component.getWidth() + getMargin();
             }
         }
         setWidth(width);
