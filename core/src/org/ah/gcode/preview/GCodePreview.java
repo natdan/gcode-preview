@@ -103,6 +103,8 @@ public class GCodePreview extends ApplicationAdapter {
 
     private ExitCallback exitCallback;
 
+    private List<String> lines;
+
     @Override
     public void create() {
         assetManager = new AssetManager();
@@ -180,8 +182,17 @@ public class GCodePreview extends ApplicationAdapter {
         window.setSize(width, height);
     }
 
-    public void loadNewModel(String fileName) {
-
+    public void loadModel() {
+        if (lines != null) {
+            parser.initParsing(lines);
+            lines = null;
+            if (gCodeModel != null) {
+                gCodeModel.dispose();
+            }
+            gCodeModel = parser.getModel();
+            parsingGCode = true;
+            consoleAtStartup = System.currentTimeMillis();
+        }
     }
 
     protected void finishedLoading() {
@@ -192,13 +203,13 @@ public class GCodePreview extends ApplicationAdapter {
         window.layout();
         console = window.getConsole();
 
+        loadModel();
         // String fileName = "even-smaller-test.gcode";
         // String fileName = "small-test.gcode";
         String fileName = "test.gcode";
         // String fileName = "bad_cube_robox.gcode";
         // String fileName = "two_nozzles_robox.gcode";
         // String fileName = "reel_bottom_robox.gcode";
-
 
         FileHandle gcodeFile = Gdx.files.internal(fileName);
         try {
@@ -422,6 +433,10 @@ public class GCodePreview extends ApplicationAdapter {
 
     public void setExitCallback(ExitCallback exitCallback) {
         this.exitCallback = exitCallback;
+    }
+
+    public void setLines(List<String> lines) {
+        this.lines = lines;
     }
 
 }

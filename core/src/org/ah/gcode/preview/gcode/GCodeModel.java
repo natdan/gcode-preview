@@ -9,7 +9,7 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.gcode;
 
@@ -17,11 +17,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GCodeModel {
-    
+
     private List<Layer> layers = new ArrayList<Layer>();
     private Point min = new Point(0f, 0f, 0f);
     private Point max = new Point(0f, 0f, 0f);
-    
+
     private int currentLayerNo = 0;
 
     private int totalInstructions;
@@ -32,24 +32,24 @@ public class GCodeModel {
 
     public GCodeModel() {
     }
-    
+
     public void setBedSize(float width, float height) {
         this.bedWidth = width;
         this.bedHeight = height;
     }
-    
+
     public float getBedWidth() {
         return bedWidth;
     }
-    
+
     public float getBedHeight() {
         return bedHeight;
     }
-    
+
     public List<Layer> getLayers() {
         return layers;
     }
-    
+
     public Point getMax() {
         return max;
     }
@@ -57,11 +57,11 @@ public class GCodeModel {
     public Point getMin() {
         return min;
     }
-    
+
     public int getTotalInstrctions() {
         return totalInstructions;
     }
-    
+
     public int getMaxInstructionsPerLayer() {
         return maxInstructionsPerLayer;
     }
@@ -72,11 +72,11 @@ public class GCodeModel {
         maxInstructionsPerLayer = 0;
         currentLayerNo = 0;
     }
-    
+
     public boolean isProcessingFinished() {
         return currentLayerNo >= layers.size();
     }
-    
+
     public void processNextLayer() {
         Layer layer = layers.get(currentLayerNo);
         layer.process(context);
@@ -86,8 +86,16 @@ public class GCodeModel {
         currentLayerNo = currentLayerNo + 1;
         totalInstructions = totalInstructions + layer.getNumberOfInstructions();
     }
-    
+
     public int getCurrentLayerNo() {
         return currentLayerNo;
-    }    
+    }
+
+    public void dispose() {
+        if (layers != null) {
+            for (Layer layer : layers) {
+                layer.dispose();
+            }
+        }
+    }
 }

@@ -9,7 +9,7 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.gcode;
 
@@ -25,10 +25,10 @@ public class GCodeParser {
         RoboxSlic3r,
         Slic3r
     }
-    
+
     private List<String> lines;
     private GCodeModel resultModel;
-    
+
     private Point currentPosition;
     private Layer currentLayer;
     private int currentLine = 0;
@@ -45,17 +45,17 @@ public class GCodeParser {
     private float nozzleSize;
     private Map<String, FloatBox> prev_extrude;
     private Map<String, IntBox> prevRetract;
-    
+
     private boolean gotCoordinates;
     private float z;
     private float y;
     private float x;
-    
+
     private DetectedSlicer detectedSlicer;
 
     public GCodeParser() {
     }
-    
+
     public GCodeModel parse(List<String> lines) {
         initParsing(lines);
         for (int lineNumber = 0; lineNumber < lines.size(); lineNumber++) {
@@ -72,8 +72,8 @@ public class GCodeParser {
         currentPosition = new Point();
 
         detectedSlicer = DetectedSlicer.Unknown;
-        
-        extrudeRelative = false; 
+
+        extrudeRelative = false;
         dcExtrude = false;
         assumeNonDC = false;
         extrude = false;
@@ -81,7 +81,7 @@ public class GCodeParser {
         prev_extrude_abs = 0f;
 
         lastF = 0f;
-        
+
         volPerMMDefined = false;
         volPerMM = 0f;
         nozzleSize = 0.3f;
@@ -91,19 +91,19 @@ public class GCodeParser {
         z = currentPosition.z;
         gotCoordinates = false;
         currentLine = 0;
-        
+
         prev_extrude = new HashMap<String, GCodeParser.FloatBox>();
         prevRetract = new HashMap<String, GCodeParser.IntBox>();
         prev_extrude.put("abs", new FloatBox(0));
 
     }
-    
+
     public boolean parseNextLine() {
         parseLine(lines.get(currentLine), currentLine + 1);
         currentLine = currentLine + 1;
         return isFinished();
     }
-    
+
     public boolean isFinished() {
         return currentLine >= lines.size();
     }
@@ -111,7 +111,7 @@ public class GCodeParser {
     public GCodeModel getModel() {
         return resultModel;
     }
-    
+
     public int getCurrentLine() {
         return currentLine;
     }
@@ -120,11 +120,11 @@ public class GCodeParser {
         return lines;
     }
     public void parseLine(String line, int lineNumber) {
-            
+
         String[] lineParts = line.split(";");
-        
+
         if (lineParts.length > 0) {
-            
+
             if (lineParts.length > 1) {
                 if (detectedSlicer == DetectedSlicer.Unknown) {
                     String comment = lineParts[1];
@@ -146,17 +146,17 @@ public class GCodeParser {
                 }
             }
             line = lineParts[0].trim();
-            
+
             gotCoordinates = false;
             retract = 0;
 
             extrude = false;
             prev_extrude_abs = 0f;
-            
+
             String[] args = line.toUpperCase().split(" ");
-            
+
             String command = args[0];
-            if ("G0".equals(command) || "G00".equals(command) 
+            if ("G0".equals(command) || "G00".equals(command)
                     || "G1".equals(command) || "G01".equals(command)) {
 
                 for (String a : args) {
@@ -176,13 +176,13 @@ public class GCodeParser {
                             prev_extrude_argChar = new FloatBox();
                             prev_extrude.put(Character.toString(c), prev_extrude_argChar);
                         }
-                        
+
                         IntBox prevRetract_extruder = prevRetract.get(Character.toString(c));
                         if (prevRetract_extruder == null) {
                             prevRetract_extruder = new IntBox();
                             prevRetract.put(Character.toString(c), prevRetract_extruder);
                         }
-                        
+
                         assumeNonDC = true;
                         float extrudeValue = Float.parseFloat(a.substring(1));
 
@@ -219,16 +219,16 @@ public class GCodeParser {
                         Point target = new Point(x, y, z);
                         if (dcExtrude && !assumeNonDC) {
                             extrude = true;
-                            prev_extrude_abs = 
-                                    (float)Math.sqrt((currentPosition.x - x) * (currentPosition.x - x) 
+                            prev_extrude_abs =
+                                    (float)Math.sqrt((currentPosition.x - x) * (currentPosition.x - x)
                                             + (currentPosition.y - y)*(currentPosition.y - y));
                         }
                         if (extrude && retract == 0) {
-                            volPerMM = prev_extrude_abs / (float)Math.sqrt((currentPosition.x - x) * (currentPosition.x - x) 
+                            volPerMM = prev_extrude_abs / (float)Math.sqrt((currentPosition.x - x) * (currentPosition.x - x)
                                     + (currentPosition.y - y)*(currentPosition.y - y));
                             volPerMMDefined = true;
                         }
-    
+
                         GCodeMovement code = new GCodeMovement(lineNumber, currentPosition, target, extrude, nozzleSize);
                         addToLayer(code);
                         currentPosition = target;
@@ -258,7 +258,7 @@ public class GCodeParser {
             }
         }
     }
-    
+
     protected Point parsePosition(String[] args) {
         float x = currentPosition.x;
         float y = currentPosition.y;
@@ -285,20 +285,20 @@ public class GCodeParser {
             return null;
         }
     }
-    
+
     protected void addToLayer(GCodeMovement code) {
         float z = currentPosition.z;
-        
-        GCodeMovement movement = (GCodeMovement)code;
+
+        GCodeMovement movement = code;
         Point target = movement.getTargetPoint();
         z = target.z;
-        
+
         resultModel.getMin().updateMin(target);
         resultModel.getMax().updateMax(target);
         if (currentLayer != null) {
             currentLayer.getMin().updateMin(target);
             currentLayer.getMax().updateMax(target);
-        }            
+        }
 
         if (currentLayer == null) {
             currentLayer = new Layer(z, z);
@@ -320,14 +320,14 @@ public class GCodeParser {
 
     private static class FloatBox {
         float f;
-        
+
         FloatBox() {}
         FloatBox(float f) { this.f = f; }
     }
 
     private static class IntBox {
         int i;
-        
+
         IntBox() {}
         IntBox(int i) { this.i = i; }
     }

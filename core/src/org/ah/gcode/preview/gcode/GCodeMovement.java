@@ -9,7 +9,7 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.gcode;
 
@@ -19,16 +19,16 @@ import com.badlogic.gdx.math.Vector3;
 
 
 public class GCodeMovement {
-    
+
     public static float MOVE_WIDTH = 0.4f;
     public static float MOVE_HEIGHT = 0.4f;
-    
+
     public static int ELEMENTS_PER_VERTICE = 12;
     public static int VERTICES_PER_CUBE = 8;
-    
+
     public static int ELEMENTS_PER_INDICE = 6;
     public static int INDICES_PER_CUBE = 12;
-    
+
     public static int ROUND_SECTIONS = 3;
 
     public static final Vector3 UP = new Vector3(0f, 1f, 0f);
@@ -47,20 +47,20 @@ public class GCodeMovement {
     private Vector3 leftStart;
     private Vector3 rightStart;
     private Vector3 ortDirection; // orthogonal line to start - end direction - in XY plane only.
-    
+
     public GCodeMovement(int lineNumber, Point source, Point target, boolean extrude, float nozzleSize) {
         this.lineNumber = lineNumber;
-        
+
         this.source = source;
         this.target = target;
         this.extrude = extrude;
         this.nozzleSize = nozzleSize;
     }
-    
+
     public int getLineNUmber() {
         return lineNumber;
     }
-    
+
     public void dispose() { }
 
     public Point getSourcePoint() {
@@ -70,15 +70,15 @@ public class GCodeMovement {
     public Point getTargetPoint() {
         return target;
     }
-    
+
     public boolean isExtrude() {
         return extrude;
     }
-    
+
     public float getNozzleSize() {
         return nozzleSize;
     }
-    
+
     public int getVerticeElementsPerSegment() {
         if (isExtrude()) {
             return (VERTICES_PER_CUBE + ROUND_SECTIONS * 2 * 2) * ELEMENTS_PER_VERTICE;
@@ -86,7 +86,7 @@ public class GCodeMovement {
             return VERTICES_PER_CUBE * ELEMENTS_PER_VERTICE;
         }
     }
-    
+
     public int getIndiceElementsPerSegment() {
         if (isExtrude()) {
             return (INDICES_PER_CUBE + ROUND_SECTIONS * 2 * 2) * ELEMENTS_PER_INDICE;
@@ -96,12 +96,12 @@ public class GCodeMovement {
     }
 
     public void process(int ordinaryNumber, MeshDetails meshDetails, float layerHeight, GCodeMovement previousMovement) {
-        
+
         this.ordinaryNumber = ordinaryNumber;
 
-        startPoint = new Vector3((float)getSourcePoint().x, (float)getSourcePoint().z, (float)getSourcePoint().y);
-        endPoint = new Vector3((float)getTargetPoint().x, (float)getTargetPoint().z, (float)getTargetPoint().y);
-        
+        startPoint = new Vector3(getSourcePoint().x, getSourcePoint().z, getSourcePoint().y);
+        endPoint = new Vector3(getTargetPoint().x, getTargetPoint().z, getTargetPoint().y);
+
         if (!isExtrude()) {
             makeMoveMesh(meshDetails, MOVE_WIDTH, MOVE_HEIGHT);
         } else {
@@ -110,10 +110,10 @@ public class GCodeMovement {
     }
 
     protected void makeMoveMesh(MeshDetails meshDetails, float width, float height) {
-        
+
         Vector3 cornerPoint = new Vector3();
         Vector3 normal = new Vector3();
-        
+
         float halfHeight = height / 2f;
         float flatWidth = width / 2f;
 
@@ -122,7 +122,7 @@ public class GCodeMovement {
         // Misused left/rightEnd variables for actually left/rightStart
         rightEnd = new Vector3(ortDirection).scl(flatWidth).add(startPoint);
         leftEnd = new Vector3(ortDirection).scl(-flatWidth).add(startPoint);
-        
+
         cornerPoint.set(rightEnd).add(0f, halfHeight, 0f);
         normal.set(startPoint).sub(cornerPoint).nor();
         int v1 = createVertice(meshDetails, cornerPoint, normal);
@@ -134,14 +134,14 @@ public class GCodeMovement {
         cornerPoint.set(leftEnd).add(0f, halfHeight, 0f);
         normal.set(startPoint).sub(cornerPoint).nor();
         int v3 = createVertice(meshDetails, cornerPoint, normal);
-        
+
         cornerPoint.set(leftEnd).sub(0f, halfHeight, 0f);
         normal.set(startPoint).sub(cornerPoint).nor();
         int v4 = createVertice(meshDetails, cornerPoint, normal);
-        
+
         rightEnd = new Vector3(ortDirection).scl(flatWidth).add(endPoint);
         leftEnd = new Vector3(ortDirection).scl(-flatWidth).add(endPoint);
-        
+
         cornerPoint.set(rightEnd).add(0f, halfHeight, 0f);
         normal.set(endPoint).sub(cornerPoint).nor();
         int v5 = createVertice(meshDetails, cornerPoint, normal);
@@ -153,11 +153,11 @@ public class GCodeMovement {
         cornerPoint.set(leftEnd).add(0f, halfHeight, 0f);
         normal.set(endPoint).sub(cornerPoint).nor();
         int v7 = createVertice(meshDetails, cornerPoint, normal);
-        
+
         cornerPoint.set(leftEnd).sub(0f, halfHeight, 0f);
         normal.set(endPoint).sub(cornerPoint).nor();
         int v8 = createVertice(meshDetails, cornerPoint, normal);
-        
+
         createPlaneIndices(meshDetails, v1, v2, v3, v4); // Start
 
         createPlaneIndices(meshDetails, v1, v3, v5, v7); // Top
@@ -185,11 +185,11 @@ public class GCodeMovement {
         //
         //  lh = layerHeight
         //  xr = xRadius = layarHeight / 2
-        // 
-        
+        //
+
         Vector3 cornerPoint = new Vector3();
         Vector3 normal = new Vector3();
-        
+
         float xRadius = layerHeight / 2f;
         float flatHalf = (nozzleSize - layerHeight) / 2; // half the length of flat region
 
@@ -198,7 +198,7 @@ public class GCodeMovement {
         // Misused left/rightEnd variables for actually left/rightStart
         rightStart = new Vector3(ortDirection).scl(flatHalf).add(startPoint);
         leftStart = new Vector3(ortDirection).scl(-flatHalf).add(startPoint);
-        
+
         rightEnd = new Vector3(ortDirection).scl(flatHalf).add(endPoint);
         leftEnd = new Vector3(ortDirection).scl(-flatHalf).add(endPoint);
 
@@ -206,11 +206,11 @@ public class GCodeMovement {
         int pv2;
         int v1;
         int v2;
-        
+
         cornerPoint.set(rightStart).add(0f, xRadius, 0f);
         int sv1 = createVertice(meshDetails, cornerPoint, UP);
         pv1 = sv1;
-        
+
         cornerPoint.set(rightEnd).add(0f, xRadius, 0f);
         int sv2 = createVertice(meshDetails, cornerPoint, UP);
         pv2 = sv2;
@@ -280,7 +280,7 @@ public class GCodeMovement {
 
         createPlaneIndices(meshDetails, v1, v2, sv1, sv2);
     }
-    
+
     private int createVertice(MeshDetails meshDetails,
             Vector3 point,
             Vector3 normal) {
@@ -319,7 +319,7 @@ public class GCodeMovement {
         // Texture coordinates
         vertices[v + 10] = 0f;
         vertices[v + 11] = 0f;
-        
+
         meshDetails.vi = v + 12;
         int vn = meshDetails.nextVertice;
         meshDetails.nextVertice = meshDetails.nextVertice + 1;
@@ -329,7 +329,7 @@ public class GCodeMovement {
     private static void createPlaneIndices(MeshDetails meshDetails, int v1, int v2, int v3, int v4) {
         short[] indices = meshDetails.indices;
         int ii = meshDetails.ii;
-        
+
         indices[ii + 0] = (short) v1;
         indices[ii + 1] = (short) v3;
         indices[ii + 2] = (short) v2;
@@ -337,7 +337,7 @@ public class GCodeMovement {
         indices[ii + 3] = (short) v2;
         indices[ii + 4] = (short) v3;
         indices[ii + 5] = (short) v4;
-        
+
         meshDetails.ii = meshDetails.ii + 6;
     }
 

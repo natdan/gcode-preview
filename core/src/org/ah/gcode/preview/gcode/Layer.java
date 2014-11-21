@@ -9,7 +9,7 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.gcode;
 
@@ -39,7 +39,7 @@ public class Layer {
 
     private Point min = new Point();
     private Point max = new Point();
-    
+
     public Layer(float layerZOffset, float layerHeight) {
         this.layerZOffset = layerZOffset;
         this.layerHeight = layerHeight;
@@ -51,11 +51,11 @@ public class Layer {
             code.dispose();
         }
     }
-    
+
     public float getZOffset() {
         return layerZOffset;
     }
-    
+
     public float getLayerHeight() {
         return layerHeight;
     }
@@ -71,11 +71,11 @@ public class Layer {
     public int getNumberOfInstructions() {
         return nextOrdinaryNumber - 1;
     }
-    
+
     public void addMovement(GCodeMovement code) {
         instructions.add(code);
     }
-    
+
 
     public void process(Context context) {
         ModelBuilder modelBuilder = new ModelBuilder();
@@ -107,7 +107,7 @@ public class Layer {
         model = modelBuilder.end();
         modelInstance = new ModelInstance(model);
     }
-    
+
     protected Mesh  process(List<GCodeMovement> movements, int verticeElements, int indiceElements, int meshNo, ModelBuilder modelBuilder, Material material, float layerHeight) {
 
         MeshDetails meshDetails = new MeshDetails(verticeElements, indiceElements, meshNo);
@@ -116,12 +116,12 @@ public class Layer {
                 VertexAttribute.Position(), VertexAttribute.ColorUnpacked(), VertexAttribute.Normal(),
                 VertexAttribute.TexCoords(0));
 
-        
+
         int vi = 0;
         int ii = 0;
         GCodeMovement previousMovement = null;
         for (GCodeMovement movement : movements) {
-            
+
             movement.process(nextOrdinaryNumber, meshDetails, layerHeight, previousMovement);
             if (movement.isExtrude()) {
                 previousMovement = movement;
@@ -134,7 +134,7 @@ public class Layer {
             ii = ii + movement.getIndiceElementsPerSegment();
         }
 
-        mesh.setVertices(meshDetails.vertices);       
+        mesh.setVertices(meshDetails.vertices);
         mesh.setIndices(meshDetails.indices);
 
         Node node = modelBuilder.node();
@@ -148,11 +148,11 @@ public class Layer {
             modelBatch.render(modelInstance, environment);
         }
     }
-    
+
     public boolean hasMesh(Mesh mesh) {
         return meshes.contains(mesh);
     }
-    
+
     public static class MeshDetails {
         int meshNo;
         float[] vertices;
@@ -166,6 +166,6 @@ public class Layer {
             indices = new short[indiceElements];
             this.meshNo = meshNo;
         }
-        
+
     }
 }
