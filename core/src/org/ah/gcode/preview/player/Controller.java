@@ -116,6 +116,7 @@ public class Controller implements InputProcessor {
             );
 
         console = window.getConsole();
+        printHelp();
         playerRenderer = new Renderer();
 
         middleX = (gCodeModel.getMax().x + gCodeModel.getMin().x) / 2;
@@ -125,11 +126,12 @@ public class Controller implements InputProcessor {
     }
 
     protected void printHelp() {
-        console.println();
-        console.println("l - cycle through layers");
+        console.println("2 - 2d view");
+        console.println("3 - 3d view");
         console.println("p - play printing");
-        console.println("a - display all");
+        console.println("l - cycle through layers");
         console.println("c - toggle console on/off");
+        console.println();
     }
 
     @Override

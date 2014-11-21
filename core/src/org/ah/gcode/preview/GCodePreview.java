@@ -291,7 +291,7 @@ public class GCodePreview extends ApplicationAdapter {
         Panel playPanel = window.getPlayPanel();
 
         long now = System.currentTimeMillis();
-        while (System.currentTimeMillis() - now < SIXTY_FPS_FRAME) {
+        while (preparingMeshes && System.currentTimeMillis() - now < SIXTY_FPS_FRAME) {
             if (gCodeModel.isProcessingFinished()) {
                 console.println("Total layers: " + gCodeModel.getLayers().size());
                 console.println("Total instructions: " + gCodeModel.getTotalInstrctions());
