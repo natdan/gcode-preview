@@ -9,13 +9,11 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.view;
 
 import java.util.List;
-
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Window extends Component {
 
@@ -26,24 +24,16 @@ public class Window extends Component {
     public List<Component> getChildren() {
         return super.getChildren();
     }
-    
+
     public void setSize(int width, int height) {
         if (width != getWidth() || height != getHeight()) {
             super.setSize(width, height);
             layout();
         }
     }
-    
+
     public void layout() {
         doLayout();
-    }
-
-    public void render(SpriteBatch spriteBatch) {
-        for (Component component : getChildren()) {
-            if (component.isVisible()) {
-                component.render(spriteBatch);
-            }
-        }
     }
 
 }

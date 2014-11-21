@@ -9,7 +9,7 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview;
 
@@ -55,8 +55,8 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.TextureProvider.AssetTextureProvider;
 import com.badlogic.gdx.math.Vector3;
 
-public class GCodePreview extends ApplicationAdapter /* implements InputProcessor */ {
-    
+public class GCodePreview extends ApplicationAdapter {
+
     public static final int SIXTY_FPS_FRAME = 1000 / 60;
 
     private AssetManager assetManager;
@@ -69,11 +69,11 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
     private SpriteBatch spriteBatch;
     private ModelBatch modelBatch;
     private Environment environment;
-    
+
     private List<ModelInstance> instances = new ArrayList<ModelInstance>();
 
     private GCodeModel gCodeModel;
-    
+
     private DirectionalLight directionalLight;
 
     private OrthographicCamera spriteFontCamera;
@@ -85,26 +85,28 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
     private GCodeParser parser;
 
     private Console console;
-        
+
     private long[] fpsArray = new long[200];
     private int fpsArrayStart = 0;
     private int fpsArrayEnd = 0;
     private String fps = "0.00";
     private long fpsTimeToPrint;
     private int FPS_REFRESH = 250;
-    
+
     private long consoleAtStartup;
     private int consoleAtStartupTimeout = 2000;
     private Color lightColor;
-    
+
     private GCodePreviewWindow window;
-    
+
     private Controller controller;
-    
+
+    private ExitCallback exitCallback;
+
     @Override
     public void create() {
         assetManager = new AssetManager();
-        
+
         BitmapFontParameter bitmapFontParameter = new BitmapFontParameter();
         bitmapFontParameter.flip = true;
         assetManager.load("arial-15.fnt", BitmapFont.class, bitmapFontParameter);
@@ -116,13 +118,19 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
         assetManager.load("gui/slider-end-up.png", Texture.class);
         assetManager.load("gui/slider-end-down.png", Texture.class);
         assetManager.load("gui/slider-vertical.png", Texture.class);
+        assetManager.load("gui/ok-button-selected.png", Texture.class);
+        assetManager.load("gui/ok-button.png", Texture.class);
+        assetManager.load("gui/cancel-button-selected.png", Texture.class);
+        assetManager.load("gui/cancel-button.png", Texture.class);
+        assetManager.load("gui/three-circles-dark.png", Texture.class);
+        assetManager.load("gui/three-circles-light.png", Texture.class);
         assetManager.load("gui/knob.png", Texture.class);
-        
-        
+
+
         textureProvider = new AssetTextureProvider(assetManager);
 
         loadingAssets = true;
-        
+
         Vector3 lightDirection = new Vector3(-0.5f, -0.5f, -1f).nor();
         lightColor = Color.WHITE;
         directionalLight = new DirectionalLight().set(lightColor, lightDirection);
@@ -133,7 +141,7 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
 
         environment = new Environment();
         environment.set(new NumberAttribute(NumberAttribute.Number, 1000));
-        
+
         modelBatch = new ModelBatch();
 
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 1.0f, 1.0f, 0.6f, 1f));
@@ -146,13 +154,15 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
 
         camera.position.set(0f, 8f, 25f);
         camera.lookAt(0, 0, 0);
-        
+
         int width = Gdx.graphics.getWidth();
         int height = Gdx.graphics.getHeight();
         window = new GCodePreviewWindow(0, 0, width, height);
         resize(width, height);
         fpsArray[0] = System.currentTimeMillis();
         fpsArrayEnd = 1;
+
+        parser = new GCodeParser();
     }
 
     @Override
@@ -170,6 +180,10 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
         window.setSize(width, height);
     }
 
+    public void loadNewModel(String fileName) {
+
+    }
+
     protected void finishedLoading() {
         loadingAssets = false;
 
@@ -184,9 +198,8 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
         // String fileName = "bad_cube_robox.gcode";
         // String fileName = "two_nozzles_robox.gcode";
         // String fileName = "reel_bottom_robox.gcode";
-        
-        parser = new GCodeParser();
-        
+
+
         FileHandle gcodeFile = Gdx.files.internal(fileName);
         try {
             List<String> lines = Files.readLines(gcodeFile);
@@ -195,15 +208,15 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        
+
         parsingGCode = true;
-        
+
         consoleAtStartup = System.currentTimeMillis();
     }
-    
+
     protected void createBed(float bedWidth, float bedHeight) {
         Texture checkedTexture = textureProvider.load("bed.png");
-        
+
         Material checkedMaterial = new Material(TextureAttribute.createDiffuse(checkedTexture));
         Material emptyMaterial = new Material();
 
@@ -216,12 +229,12 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
 
         ModelInstance planeInstance = new ModelInstance(planeModel);
         instances.add(planeInstance);
-        
+
         SceneCameraInputController sceneCameraInputController = new SceneCameraInputController(camera, planeInstance);
 
-        controller = new Controller(gCodeModel, window, sceneCameraInputController);
+        controller = new Controller(gCodeModel, window, sceneCameraInputController, exitCallback);
         Gdx.input.setInputProcessor(controller);
-        
+
         Model axisModel = modelBuilder.createXYZCoordinates(10, emptyMaterial, Usage.Position | Usage.ColorUnpacked | Usage.Normal);
         ModelInstance axisInstance = new ModelInstance(axisModel);
         instances.add(axisInstance);
@@ -231,7 +244,7 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
         long now = System.currentTimeMillis();
         while (System.currentTimeMillis() - now < SIXTY_FPS_FRAME) {
             if (parser.isFinished()) {
-                                
+
                 Material whiteMaterial = new Material(ColorAttribute.createAmbient(1f, 1f, 1f, 1f), new BlendingAttribute(true, 1f));
                 Context context = new Context();
                 context.material = whiteMaterial;
@@ -262,7 +275,7 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
         playPanel.text("Parsed lines: ", 0);
         playPanel.text(parser.getCurrentLine() + "/" + parser.getLines().size(), 1);
     }
-    
+
     protected void prepareMesh() {
         Panel playPanel = window.getPlayPanel();
 
@@ -290,7 +303,7 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
         playPanel.text("Creating meshes for layers", 0);
         playPanel.text(gCodeModel.getCurrentLayerNo() + "/" + gCodeModel.getLayers().size(), 1);
     }
-    
+
     @Override
     public void render() {
         if (loadingAssets && assetManager.update()) {
@@ -324,8 +337,8 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
 //        Gdx.gl.glEnable(GL20.GL_BLEND);
 //        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         Gdx.gl.glClearColor(1f, 1f, 1f, 1f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT 
-                | GL20.GL_DEPTH_BUFFER_BIT 
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT
+                | GL20.GL_DEPTH_BUFFER_BIT
                 | (Gdx.graphics.getBufferFormat().coverageSampling ? GL20.GL_COVERAGE_BUFFER_BIT_NV : 0));
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -342,14 +355,14 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
         if (controller != null) {
             controller.render(camera, environment);
         }
-        
+
         spriteBatch.begin();
         spriteBatch.setProjectionMatrix(spriteFontCamera.combined);
         spriteBatch.enableBlending();
         window.render(spriteBatch);
         spriteBatch.end();
     }
-    
+
 
     public static class NumberAttribute extends IntAttribute {
         public static final String NumberAlias = "number";
@@ -359,20 +372,20 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
             super(type, value);
         }
     }
-    
+
     public void calcFps() {
         long now = System.currentTimeMillis();
         fpsArray[fpsArrayEnd] = now;
         long last = now;
 
         int i = fpsArrayEnd;
-        
+
         fpsArrayEnd = fpsArrayEnd + 1;
         if (fpsArrayEnd == fpsArray.length) { fpsArrayEnd = 0; }
 
         int total = 0;
         int n = 0;
-        
+
         while (i != fpsArrayStart && now - fpsArray[i] <= 1000) {
             i = i - 1;
             if (i < 0) { i = fpsArray.length - 1; }
@@ -387,7 +400,7 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
                 fpsArrayStart = 0;
             }
         }
-        
+
         int fpsi = 0;
         if (total != 0) {
             fpsi = 100000 * n / total;
@@ -401,6 +414,14 @@ public class GCodePreview extends ApplicationAdapter /* implements InputProcesso
             fpsPanel.clear();
             fpsPanel.text("fps: " + fps, 0);
         }
+    }
+
+    public ExitCallback getExitCallback() {
+        return exitCallback;
+    }
+
+    public void setExitCallback(ExitCallback exitCallback) {
+        this.exitCallback = exitCallback;
     }
 
 }

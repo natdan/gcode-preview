@@ -9,16 +9,18 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.player;
 
 import java.util.List;
 
+import org.ah.gcode.preview.ExitCallback;
 import org.ah.gcode.preview.GCodePreviewWindow;
 import org.ah.gcode.preview.gcode.GCodeModel;
 import org.ah.gcode.preview.gcode.Layer;
 import org.ah.gcode.preview.utils.SceneCameraInputController;
+import org.ah.gcode.preview.view.Button;
 import org.ah.gcode.preview.view.Console;
 import org.ah.gcode.preview.view.Panel;
 import org.ah.gcode.preview.view.Slider;
@@ -38,6 +40,8 @@ public class Controller implements InputProcessor {
 
     private Mode mode = Mode.Loading;
 
+    private ExitCallback exitCallback;
+
     private GCodeModel gCodeModel;
     private GCodePreviewWindow window;
     private Console console;
@@ -47,22 +51,22 @@ public class Controller implements InputProcessor {
 
     private float middleX = 0;
     private float middleY = 0;
-    
+
     private int mouseX;
     private int mouseY;
-    
+
     private int startLayerNo = 0;
     private int currentLayerNo = 0;
     private int visibleLayerNo = 1;
     private long lastLayersChange = 0;
     private long layersChangeSpeed = 100;
-    
+
     private int instructionsSpeed = 1;
     private int timeoutBeforeResun = 3000;
-    
+
     private long lastPlayed = 0;
     private boolean paused = false;
-    
+
     private boolean displayTopLayers = false;
 
     private Renderer playerRenderer;
@@ -72,25 +76,27 @@ public class Controller implements InputProcessor {
 
     private Slider verticalSlider;
     private Knob verticalKnob;
-    
-    public Controller(GCodeModel gCodeModel, 
+
+    public Controller(GCodeModel gCodeModel,
             GCodePreviewWindow window,
-            SceneCameraInputController sceneCameraInputController) {
+            SceneCameraInputController sceneCameraInputController,
+            ExitCallback exitCallback) {
         this.gCodeModel = gCodeModel;
         this.window = window;
         this.sceneCameraInputController = sceneCameraInputController;
-        
+        this.exitCallback = exitCallback;
+
         horizontalSlider = window.getHorizontalSlider();
         horizontalKnob = horizontalSlider.getKnobs().get(0);
         horizontalKnob.setPositionChangedListener(
-                (Knob knob, int oldPosition, int newPosition) -> 
+                (Knob knob, int oldPosition, int newPosition) ->
                     playerRenderer.setCurrentInstructionNo(newPosition)
             );
 
         verticalSlider = window.getVerticalSlider();
         verticalKnob = verticalSlider.getKnobs().get(0);
         verticalKnob.setPositionChangedListener(
-                (Knob knob, int oldPosition, int newPosition) -> 
+                (Knob knob, int oldPosition, int newPosition) ->
                     {
                         int layerNo = newPosition;
                         if (layerNo >= gCodeModel.getLayers().size()) {
@@ -99,6 +105,14 @@ public class Controller implements InputProcessor {
                         if (layerNo < 0) { layerNo = 0; }
                         setCurrentLayer(layerNo);
                     }
+            );
+
+        window.getOKButton().registerButtonClickedListener(
+                (Button button) -> exitCallback.exit()
+            );
+
+        window.getCancelButton().registerButtonClickedListener(
+                (Button button) -> exitCallback.exit()
             );
 
         console = window.getConsole();
@@ -120,6 +134,11 @@ public class Controller implements InputProcessor {
 
     @Override
     public boolean keyDown(int keycode) {
+        if (keycode == Keys.ESCAPE) {
+            if (exitCallback != null) {
+                exitCallback.exit();
+            }
+        }
         if (keycode == Keys.LEFT) {
             if (getMode() == Mode.Play) {
                 int speed = getInsrtuctionsSpeed();
@@ -134,13 +153,6 @@ public class Controller implements InputProcessor {
                 setInsrtuctionsSpeed(speed + 1);
                 return true;
             }
-        }
-        if (console.isVisible()) {
-            if (keycode == Keys.ESCAPE) {
-                console.setVisible(false);
-                return true;
-            }
-        } else {
         }
         return false;
     }
@@ -228,7 +240,8 @@ public class Controller implements InputProcessor {
     public boolean mouseMoved(int screenX, int screenY) {
         mouseX = screenX;
         mouseY = screenY;
-        return false;
+        boolean res = window.receiveMouseMoved(screenX, screenY);
+        return res;
     }
 
     @Override
@@ -239,7 +252,7 @@ public class Controller implements InputProcessor {
         }
         return consumed;
     }
-    
+
     public void render(Camera camera, Environment environment) {
         Panel playPanel = window.getPlayPanel();
         List<Layer> layers = gCodeModel.getLayers();
@@ -264,7 +277,7 @@ public class Controller implements InputProcessor {
                 }
             }
             playerRenderer.renderProgress(camera, environment, layers, startLayerNo, currentLayerNo, displayTopLayers);
-            
+
         } else if (mode == Mode.Play) {
             if (!paused) {
                 if (lastPlayed > 0) {
@@ -294,7 +307,7 @@ public class Controller implements InputProcessor {
                     }
                 }
             }
-            
+
             playerRenderer.renderProgress(camera, environment, layers, startLayerNo, currentLayerNo, displayTopLayers);
         } else if (mode == Mode.TwoD) {
             playerRenderer.renderProgress(camera, environment, layers, currentLayerNo, currentLayerNo, false);
@@ -309,7 +322,7 @@ public class Controller implements InputProcessor {
             playPanel.text("Speed: " + Integer.toString(getInsrtuctionsSpeed()), 2);
         }
     }
-    
+
     public void startCyclingThroughLayers() {
         startLayerNo = 0;
         currentLayerNo = 0;
@@ -326,7 +339,7 @@ public class Controller implements InputProcessor {
         playerRenderer.setCurrentInstructionNo(0);
         setMode(Mode.Play);
     }
-    
+
     public void setTwoDView() {
         sceneCameraInputController.resetToCentre(middleX, middleY);
         sceneCameraInputController.setTwoDimensions();
@@ -338,15 +351,15 @@ public class Controller implements InputProcessor {
         }
         setMode(Mode.TwoD);
     }
-    
+
     public void displayAll() {
         setMode(Mode.DisplayAll);
     }
-    
+
     protected Mode getMode() {
         return mode;
     }
-    
+
     protected void setMode(Mode mode) {
         this.mode = mode;
 //        Panel playPanel = window.getPlayPanel();
@@ -360,15 +373,15 @@ public class Controller implements InputProcessor {
     public boolean isPaused() {
         return paused;
     }
-    
+
     public void setPaused(boolean paused) {
         this.paused = paused;
     }
-    
+
     public int getInsrtuctionsSpeed() {
         return instructionsSpeed;
     }
-    
+
     public void setInsrtuctionsSpeed(int instructionsSpeed) {
         this.instructionsSpeed = instructionsSpeed;
     }
@@ -387,7 +400,7 @@ public class Controller implements InputProcessor {
     public int getCurrentLayerNo() {
         return currentLayerNo;
     }
-    
+
     public void setCurrentLayer(int layerNo) {
         if (layerNo >= gCodeModel.getLayers().size()) {
             layerNo = gCodeModel.getLayers().size() -1;
@@ -406,14 +419,14 @@ public class Controller implements InputProcessor {
             horizontalKnob.setPosition(horizontalSlider.getMax());
             playerRenderer.setCurrentInstructionNo(horizontalSlider.getMax());
         }
-        
+
         int layersNumber = gCodeModel.getLayers().size();
         if (layersNumber > 0) {
             layersNumber = layersNumber - 1;
             // Unike with instructions where '0' means - no instructions and max means last instruction
             // for layers this means we count '0' as well as a layer. So max is last number slider
             // can hold - and that is one less to exact numbers of layers. When displaying which layer
-            // is selected we will add one so screen has '1' based output... 
+            // is selected we will add one so screen has '1' based output...
         }
         verticalSlider.setMax(layersNumber);
         verticalKnob.setPosition(layerNo);

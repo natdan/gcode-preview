@@ -9,7 +9,7 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.desktop;
 
@@ -18,8 +18,13 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import org.ah.gcode.preview.GCodePreview;
 
 public class GCodePreviewLauncher {
+
+    public static LwjglApplication app;
+
     public static void main(String[] arg) {
         LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-        new LwjglApplication(new GCodePreview(), config);
+        GCodePreview gCodePreview = new GCodePreview();
+        gCodePreview.setExitCallback(() -> app.exit());
+        app = new LwjglApplication(gCodePreview, config);
     }
 }
