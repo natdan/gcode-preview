@@ -13,7 +13,6 @@
  *******************************************************************************/
 package org.ah.gcode.preview;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +20,6 @@ import org.ah.gcode.preview.gcode.Context;
 import org.ah.gcode.preview.gcode.GCodeModel;
 import org.ah.gcode.preview.gcode.GCodeParser;
 import org.ah.gcode.preview.player.Controller;
-import org.ah.gcode.preview.utils.Files;
 import org.ah.gcode.preview.utils.ModelBuilders;
 import org.ah.gcode.preview.utils.SceneCameraInputController;
 import org.ah.gcode.preview.view.Console;
@@ -31,7 +29,6 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.BitmapFontLoader.BitmapFontParameter;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
@@ -104,6 +101,8 @@ public class GCodePreview extends ApplicationAdapter {
     private ExitCallback exitCallback;
 
     private List<String> lines;
+
+    private ModelInstance planeInstance;
 
     @Override
     public void create() {
@@ -238,11 +237,10 @@ public class GCodePreview extends ApplicationAdapter {
         modelBuilder.part("1", mesh, GL20.GL_TRIANGLES, checkedMaterial);
         Model planeModel = modelBuilder.end();
 
-        ModelInstance planeInstance = new ModelInstance(planeModel);
+        planeInstance = new ModelInstance(planeModel);
         instances.add(planeInstance);
 
         SceneCameraInputController sceneCameraInputController = new SceneCameraInputController(camera, planeInstance);
-
         controller = new Controller(gCodeModel, window, sceneCameraInputController, exitCallback);
         Gdx.input.setInputProcessor(controller);
 
@@ -302,17 +300,24 @@ public class GCodePreview extends ApplicationAdapter {
                 playPanel.clear();
                 playPanel.text("Created meshes for all layers", 0);
 
+
                 consoleAtStartup = System.currentTimeMillis();
                 preparingMeshes = false;
+
+                controller.resetView();
                 controller.setTwoDView();
             } else {
                 gCodeModel.processNextLayer();
             }
         }
-        playPanel.setVisible(true);
-        playPanel.clear();
-        playPanel.text("Creating meshes for layers", 0);
-        playPanel.text(gCodeModel.getCurrentLayerNo() + "/" + gCodeModel.getLayers().size(), 1);
+        if (preparingMeshes) {
+            // While still preparing meshes
+            controller.setCurrentLayer(gCodeModel.getLayers().size());
+            playPanel.setVisible(true);
+            playPanel.clear();
+            playPanel.text("Creating meshes for layers", 0);
+            playPanel.text(gCodeModel.getCurrentLayerNo() + "/" + gCodeModel.getLayers().size(), 1);
+        }
     }
 
     @Override

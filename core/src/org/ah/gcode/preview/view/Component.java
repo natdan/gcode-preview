@@ -141,6 +141,7 @@ public class Component {
     }
 
     private Component selectedComponent;
+    private Component mouseMoveComponent;
 
     public boolean receiveTouchDown(int screenX, int screenY, int pointer, int button) {
         if (hasChildren()) {
@@ -219,15 +220,18 @@ public class Component {
         if (selectedComponent != null) {
             res = selectedComponent.receiveMouseMoved(screenX, screenY);
         }
+        if (mouseMoveComponent != null) {
+            res = mouseMoveComponent.receiveMouseMoved(screenX, screenY);
+        }
         if (!res && hasChildren()) {
             for (Component component : getChildren()) {
                 if (component.getX() <= screenX && component.getX() + component.getWidth() >= screenX
                         && component.getY() <= screenY && component.getY() + component.getHeight() >= screenY) {
-                    if (selectedComponent != null) {
-                        selectedComponent = null;
+                    if (mouseMoveComponent != null) {
+                        mouseMoveComponent = null;
                     }
                     res = component.receiveMouseMoved(screenX, screenY);
-                    selectedComponent = component;
+                    mouseMoveComponent = component;
                     if (res) {
                         return true;
                     }
