@@ -9,7 +9,7 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.view;
 
@@ -38,21 +38,26 @@ public class HorizontalSlider extends Slider {
         int hw = horizontal.getWidth();
         int hh = horizontal.getHeight();
         int rw = rightTexture.getWidth();
-        
+
         int posX = getX();
         int posY = getY();
         int width = getWidth();
-        
+
         int path = width - kw;
-        
+
         spriteBatch.draw(leftTexture, posX, posY);
         spriteBatch.draw(rightTexture, posX + width - rw, posY);
 
-        spriteBatch.draw(horizontal, posX + lw, posY, width - lw - rw, hh, 
+        spriteBatch.draw(horizontal, posX + lw, posY, width - lw - rw, hh,
                 0, 0, hw, hh, false, false);
-        
+
         for (Knob knob : getKnobs()) {
-            spriteBatch.draw(knobTexture, posX + knob.getPosition() * path / max, posY + (lh - kh) / 2);
+            int x = 0;
+            if (max != 0) {
+                x = posX + knob.getPosition() * path / max;
+            }
+            int y = posY + (lh - kh) / 2;
+            spriteBatch.draw(knobTexture, x, y);
         }
     }
 

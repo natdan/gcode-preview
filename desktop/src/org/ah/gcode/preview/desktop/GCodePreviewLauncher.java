@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import javax.swing.JFileChooser;
+
 import org.ah.gcode.preview.GCodePreview;
 import org.ah.gcode.preview.utils.Files;
 
@@ -29,11 +31,17 @@ public class GCodePreviewLauncher {
 
     public static LwjglApplication app;
 
-    public static void main(String[] arg) {
+    public static void main(String[] args) {
 
-        if (arg.length != 1) {
-            System.err.println("You need to supply gcode file");
+        File gcodeFile = null;
+        if (args.length > 1) {
+            System.err.println("At the moment only one argument is allowed.");
             System.exit(1);
+        } else if (args.length == 1) {
+            String fileName = args[0];
+            gcodeFile = new File(fileName);
+        } else {
+            gcodeFile = chooseFile();
         }
 
         GCodePreview gCodePreview = new GCodePreview();
@@ -45,8 +53,6 @@ public class GCodePreviewLauncher {
         // String fileName = "two_nozzles_robox.gcode";
         // String fileName = "reel_bottom_robox.gcode";
 
-        String fileName = arg[0];
-        File gcodeFile = new File(fileName);
         if (!gcodeFile.exists()) {
             System.err.println("File does not exist: " + gcodeFile.getAbsolutePath());
             System.exit(1);
@@ -73,5 +79,19 @@ public class GCodePreviewLauncher {
         config.width = 1024;
         config.height = 768;
         app = new LwjglApplication(gCodePreview, config);
+    }
+
+    public static File chooseFile() {
+        File selectedFile = null;
+        JFileChooser fc = new JFileChooser();
+
+        int res = fc.showOpenDialog(null);
+        if (res == JFileChooser.APPROVE_OPTION) {
+            selectedFile = fc.getSelectedFile();
+        } else {
+            System.err.println("No files selected");
+            System.exit(1);
+        }
+        return selectedFile;
     }
 }

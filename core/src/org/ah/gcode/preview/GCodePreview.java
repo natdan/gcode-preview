@@ -204,23 +204,23 @@ public class GCodePreview extends ApplicationAdapter {
         console = window.getConsole();
 
         loadModel();
-        // String fileName = "even-smaller-test.gcode";
-        // String fileName = "small-test.gcode";
-        String fileName = "test.gcode";
-        // String fileName = "bad_cube_robox.gcode";
-        // String fileName = "two_nozzles_robox.gcode";
-        // String fileName = "reel_bottom_robox.gcode";
-
-        FileHandle gcodeFile = Gdx.files.internal(fileName);
-        try {
-            List<String> lines = Files.readLines(gcodeFile);
-            parser.initParsing(lines);
-            gCodeModel = parser.getModel();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        parsingGCode = true;
+//        // String fileName = "even-smaller-test.gcode";
+//        // String fileName = "small-test.gcode";
+//        String fileName = "test.gcode";
+//        // String fileName = "bad_cube_robox.gcode";
+//        // String fileName = "two_nozzles_robox.gcode";
+//        // String fileName = "reel_bottom_robox.gcode";
+//
+//        FileHandle gcodeFile = Gdx.files.internal(fileName);
+//        try {
+//            List<String> lines = Files.readLines(gcodeFile);
+//            parser.initParsing(lines);
+//            gCodeModel = parser.getModel();
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        parsingGCode = true;
 
         consoleAtStartup = System.currentTimeMillis();
     }

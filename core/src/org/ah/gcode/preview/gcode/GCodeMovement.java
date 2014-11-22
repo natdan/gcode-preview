@@ -190,6 +190,10 @@ public class GCodeMovement {
         Vector3 cornerPoint = new Vector3();
         Vector3 normal = new Vector3();
 
+        if (layerHeight > nozzleSize) {
+            layerHeight = nozzleSize;
+        }
+
         float xRadius = layerHeight / 2f;
         float flatHalf = (nozzleSize - layerHeight) / 2; // half the length of flat region
 
