@@ -90,8 +90,6 @@ public class GCodePreview extends ApplicationAdapter {
     private long fpsTimeToPrint;
     private int FPS_REFRESH = 250;
 
-    private long consoleAtStartup;
-    private int consoleAtStartupTimeout = 2000;
     private Color lightColor;
 
     private GCodePreviewWindow window;
@@ -190,7 +188,7 @@ public class GCodePreview extends ApplicationAdapter {
             }
             gCodeModel = parser.getModel();
             parsingGCode = true;
-            consoleAtStartup = System.currentTimeMillis();
+
         }
     }
 
@@ -203,25 +201,6 @@ public class GCodePreview extends ApplicationAdapter {
         console = window.getConsole();
 
         loadModel();
-//        // String fileName = "even-smaller-test.gcode";
-//        // String fileName = "small-test.gcode";
-//        String fileName = "test.gcode";
-//        // String fileName = "bad_cube_robox.gcode";
-//        // String fileName = "two_nozzles_robox.gcode";
-//        // String fileName = "reel_bottom_robox.gcode";
-//
-//        FileHandle gcodeFile = Gdx.files.internal(fileName);
-//        try {
-//            List<String> lines = Files.readLines(gcodeFile);
-//            parser.initParsing(lines);
-//            gCodeModel = parser.getModel();
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        parsingGCode = true;
-
-        consoleAtStartup = System.currentTimeMillis();
     }
 
     protected void createBed(float bedWidth, float bedHeight) {
@@ -243,6 +222,8 @@ public class GCodePreview extends ApplicationAdapter {
         SceneCameraInputController sceneCameraInputController = new SceneCameraInputController(camera, planeInstance);
         controller = new Controller(gCodeModel, window, sceneCameraInputController, exitCallback);
         Gdx.input.setInputProcessor(controller);
+
+        controller.getLeftPanel().setVisible(true);
 
         Model axisModel = modelBuilder.createXYZCoordinates(10, emptyMaterial, Usage.Position | Usage.ColorUnpacked | Usage.Normal);
         ModelInstance axisInstance = new ModelInstance(axisModel);
@@ -280,7 +261,7 @@ public class GCodePreview extends ApplicationAdapter {
         }
         Panel playPanel = window.getPlayPanel();
         playPanel.setVisible(true);
-        playPanel.clear();
+        playPanel.refresh();
         playPanel.text("Parsed lines: ", 0);
         playPanel.text(parser.getCurrentLine() + "/" + parser.getLines().size(), 1);
     }
@@ -297,11 +278,12 @@ public class GCodePreview extends ApplicationAdapter {
                 console.println();
 
                 playPanel.setVisible(false);
-                playPanel.clear();
+                playPanel.refresh();
                 playPanel.text("Created meshes for all layers", 0);
 
-
-                consoleAtStartup = System.currentTimeMillis();
+                if (controller.getLeftPanel().isVisible()) {
+                    controller.consoleAtStartup();
+                }
                 preparingMeshes = false;
 
                 controller.resetView();
@@ -309,12 +291,13 @@ public class GCodePreview extends ApplicationAdapter {
             } else {
                 gCodeModel.processNextLayer();
             }
+            console.println("Processed " + gCodeModel.getCurrentLayerNo() + " meshes");
         }
         if (preparingMeshes) {
             // While still preparing meshes
             controller.setCurrentLayer(gCodeModel.getLayers().size());
             playPanel.setVisible(true);
-            playPanel.clear();
+            playPanel.refresh();
             playPanel.text("Creating meshes for layers", 0);
             playPanel.text(gCodeModel.getCurrentLayerNo() + "/" + gCodeModel.getLayers().size(), 1);
         }
@@ -329,12 +312,6 @@ public class GCodePreview extends ApplicationAdapter {
         if (loadingAssets) {
         } else {
             calcFps();
-            if (consoleAtStartup > 0) {
-                if (System.currentTimeMillis() - consoleAtStartup > consoleAtStartupTimeout) {
-                    consoleAtStartup = 0;
-                    console.setVisible(false);
-                }
-            }
             if (parsingGCode) {
                 parseGCode();
             } else if (preparingMeshes) {
@@ -427,7 +404,7 @@ public class GCodePreview extends ApplicationAdapter {
         if (now - fpsTimeToPrint > FPS_REFRESH) {
             fpsTimeToPrint = now;
             Panel fpsPanel = window.getFPSPanel();
-            fpsPanel.clear();
+            fpsPanel.refresh();
             fpsPanel.text("fps: " + fps, 0);
         }
     }

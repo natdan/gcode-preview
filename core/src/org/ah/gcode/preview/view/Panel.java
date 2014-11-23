@@ -9,11 +9,12 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.view;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap.Format;
@@ -29,7 +30,7 @@ public class Panel extends Component {
     public static enum Alignment {
         Left, Right, Center;
     }
-    
+
     protected Texture texture;
     protected BitmapFont font;
     protected FrameBuffer frameBuffer;
@@ -39,7 +40,7 @@ public class Panel extends Component {
 
     protected int xPadding = 2;
     protected int yPadding = 2;
-    
+
     protected ModelInstance modelInstance;
 
     protected boolean visible = true;
@@ -47,15 +48,15 @@ public class Panel extends Component {
     public Panel(BitmapFont font, int width) {
         this(font, width, (int)font.getLineHeight());
     }
-    
+
     public Panel(BitmapFont font, int width, int xPadding, int yPadding) {
         this(font, width, (int)font.getLineHeight(), xPadding, yPadding);
     }
-    
+
     public Panel(BitmapFont font, int width, int height) {
         this(font, width, height, 2, 2);
     }
-    
+
     public Panel(BitmapFont font, int width, int height, int xPadding, int yPadding) {
         super(width, height);
 
@@ -63,36 +64,68 @@ public class Panel extends Component {
         this.xPadding = xPadding;
         this.yPadding = yPadding;
 
-        frameBuffer = new FrameBuffer(Format.RGBA8888, width, height, false);
         camera = new OrthographicCamera();
-        camera.setToOrtho(true, frameBuffer.getWidth(), frameBuffer.getHeight());
+
+        frameBuffer = new FrameBuffer(Format.RGBA8888, width, height, false);
         texture = frameBuffer.getColorBufferTexture();
+
+        camera.setToOrtho(true, frameBuffer.getWidth(), frameBuffer.getHeight());
 
         batch = new SpriteBatch();
         batch.enableBlending();
         batch.setProjectionMatrix(camera.combined);
 
-        clear();
+        refresh();
     }
-    
+
     public void dispose() {
         texture.dispose();
         frameBuffer.dispose();
     }
-    
+
+    public void addChild(Component component) {
+        super.addChild(component);
+    }
+
     public ModelInstance getModelInstance() {
         return modelInstance;
     }
-    
+
     public void render(SpriteBatch spriteBatch) {
         spriteBatch.draw(texture, posX, posY);
     }
 
-    public void clear() {
+    public void refresh() {
         frameBuffer.begin();
+        Color backgroundColor = getBackgroundColor();
         Gdx.gl.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        batch.begin();
+        if (hasChildren()) {
+            for (Component component : getChildren()) {
+                component.render(batch);
+            }
+        }
+        batch.end();
         frameBuffer.end();
+    }
+
+    @Override
+    public void setSize(int width, int height) {
+        if (width != getWidth() || height != getHeight()) {
+            super.setSize(width, height);
+            texture.dispose();
+            frameBuffer.dispose();
+
+            frameBuffer = new FrameBuffer(Format.RGBA8888, width, height, false);
+            texture = frameBuffer.getColorBufferTexture();
+
+            camera.setToOrtho(true, frameBuffer.getWidth(), frameBuffer.getHeight());
+            camera.update();
+            batch.setProjectionMatrix(camera.combined);
+
+            refresh();
+        }
     }
 
     public void text(String text, int line) {

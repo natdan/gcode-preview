@@ -14,13 +14,11 @@ public class HorizontalGroup extends Group {
         }
         for (Component component : getChildren()) {
             if (component.isVisible()) {
-                component.setX(getX() + width);
-                component.setY(getY());
+                component.setPosition(getX() + width, getY());
                 width = width + component.getWidth() + getMargin();
             }
         }
-        setWidth(width);
-        setHeight(height);
+        setSize(width, height);
     }
 
 }

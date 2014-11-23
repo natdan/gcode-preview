@@ -30,7 +30,7 @@ public class Component {
     private List<Component> children;
     private Component parent;
 
-    protected Color backgroundColor = new Color(0.6f, 0.6f, 0.7f, 0.8f);
+    private Color backgroundColor = new Color(0.5f, 0.5f, 0.5f, 0.9f);
 
     protected boolean visible = true;
 
@@ -82,20 +82,20 @@ public class Component {
 
     public void setPosition(int x, int y) {
         if (x != posX || y != posY) {
-            setX(x);
-            setY(y);
+            posX = x;
+            posY = y;
         }
     }
 
-    public void setX(int posX) { this.posX = posX; }
-    public void setY(int posY) { this.posY = posY; }
+//    public void setX(int posX) { this.posX = posX; }
+//    public void setY(int posY) { this.posY = posY; }
     public int getX() { return posX; }
     public int getY() { return posY; }
 
     public void setSize(int width, int height) {
         if (width != getWidth() || height != getHeight()) {
-            setWidth(width);
-            setHeight(height);
+            this.width = width;
+            this.height = height;
         }
     }
 
@@ -110,8 +110,8 @@ public class Component {
     protected void doLayout() {
     }
 
-    public void setWidth(int width) { this.width = width; }
-    public void setHeight(int height) { this.height = height; }
+//    public void setWidth(int width) { this.width = width; }
+//    public void setHeight(int height) { this.height = height; }
     public int getWidth() { return width; }
     public int getHeight() { return height; }
 

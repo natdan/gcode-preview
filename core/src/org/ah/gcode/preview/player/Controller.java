@@ -21,6 +21,7 @@ import org.ah.gcode.preview.gcode.GCodeModel;
 import org.ah.gcode.preview.gcode.Layer;
 import org.ah.gcode.preview.utils.SceneCameraInputController;
 import org.ah.gcode.preview.view.Button;
+import org.ah.gcode.preview.view.Component;
 import org.ah.gcode.preview.view.Console;
 import org.ah.gcode.preview.view.Panel;
 import org.ah.gcode.preview.view.Slider;
@@ -44,6 +45,7 @@ public class Controller implements InputProcessor {
 
     private GCodeModel gCodeModel;
     private GCodePreviewWindow window;
+    private Component leftPanel;
     private Console console;
     private SceneCameraInputController sceneCameraInputController;
 
@@ -76,6 +78,10 @@ public class Controller implements InputProcessor {
 
     private Slider verticalSlider;
     private Knob verticalKnob;
+
+    private long consoleAtStartup;
+
+    private int consoleAtStartupTimeout = 2000;
 
     public Controller(GCodeModel gCodeModel,
             GCodePreviewWindow window,
@@ -115,6 +121,7 @@ public class Controller implements InputProcessor {
                 (Button button) -> exitCallback.exit()
             );
 
+        leftPanel = window.getLeftPanel();
         console = window.getConsole();
         printHelp();
         playerRenderer = new Renderer();
@@ -122,6 +129,8 @@ public class Controller implements InputProcessor {
         middleY = gCodeModel.getBedHeight() / 2;
         sceneCameraInputController.resetToCentre(middleX, middleY);
     }
+
+    public Component getLeftPanel() { return leftPanel; }
 
     public void resetView() {
         middleX = (gCodeModel.getMax().x + gCodeModel.getMin().x) / 2;
@@ -171,7 +180,10 @@ public class Controller implements InputProcessor {
     @Override
     public boolean keyTyped(char character) {
         if (character == 'c') {
-            console.setVisible(!console.isVisible());
+            if (!console.isVisible()) {
+                consoleAtStartup = -1;
+            }
+            leftPanel.setVisible(!console.isVisible());
             return true;
         } else if (character == 'l') {
             sceneCameraInputController.setThreeDimensions();
@@ -190,7 +202,7 @@ public class Controller implements InputProcessor {
             return true;
         } else if (character == 'h') {
             if (!console.isVisible()) {
-                console.setVisible(true);
+                leftPanel.setVisible(true);
             }
             printHelp();
             return true;
@@ -260,6 +272,13 @@ public class Controller implements InputProcessor {
     }
 
     public void render(Camera camera, Environment environment) {
+        if (consoleAtStartup > 0) {
+            if (System.currentTimeMillis() - consoleAtStartup > consoleAtStartupTimeout) {
+                consoleAtStartup = 0;
+                leftPanel.setVisible(false);
+            }
+        }
+
         Panel playPanel = window.getPlayPanel();
         List<Layer> layers = gCodeModel.getLayers();
         if (mode == Mode.CycleThroughLayers)  {
@@ -324,7 +343,7 @@ public class Controller implements InputProcessor {
         }
 
         if (mode != Mode.Loading) {
-            playPanel.clear();
+            playPanel.refresh();
 
             if (getCurrentLayerNo() >= gCodeModel.getLayers().size()) {
                 playPanel.text("Layer: ALL /" + gCodeModel.getLayers().size(), 0);
@@ -385,12 +404,6 @@ public class Controller implements InputProcessor {
         } else {
             playerRenderer.setReadjustZOffset(false);
         }
-//        Panel playPanel = window.getPlayPanel();
-//        if (mode == Mode.Play) {
-//            playPanel.setVisible(true);
-//        } else {
-//            playPanel.setVisible(false);
-//        }
     }
 
     public boolean isPaused() {
@@ -452,5 +465,12 @@ public class Controller implements InputProcessor {
         }
         verticalSlider.setMax(layersNumber);
         verticalKnob.setPosition(layerNo);
+    }
+
+    public void consoleAtStartup() {
+        if (consoleAtStartup >= 0) {
+            consoleAtStartup = System.currentTimeMillis();
+            leftPanel.setVisible(true);
+        }
     }
 }
