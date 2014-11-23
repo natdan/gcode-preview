@@ -9,7 +9,7 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.player;
 
@@ -38,20 +38,21 @@ public class Renderer {
 
     private int currentInstructionNo = 0;
     private Layer currentLayer;
+    private boolean readjustZOffset = false;
 
     public Renderer() {
         bottomShaderProvider = new DefaultShaderProvider() {
-            
+
             DefaultShader currentLayerShader = null;
-            
+
             @Override protected Shader createShader (final Renderable renderable) {
                 if (currentLayerHasMesh(renderable.mesh)) { // Current layer shader
                     if (currentLayerShader == null) {
                         DefaultShader.Config config = new DefaultShader.Config(
-                                Gdx.files.internal("shaders/lighting.current.vertex.glsl").readString(), 
+                                Gdx.files.internal("shaders/lighting.current.vertex.glsl").readString(),
                                 Gdx.files.internal("shaders/lighting.fragment.glsl").readString());
                         currentLayerShader = new DefaultShader(renderable, config);
-        
+
                         currentLayerShader.register(new BaseShader.Uniform("u_number"), new BaseShader.GlobalSetter() {
                             @Override public void set(BaseShader shader, int inputID, Renderable renderable, Attributes combinedAttributes) {
                                 shader.set(inputID, getCurrentInstructionNo());
@@ -61,7 +62,7 @@ public class Renderer {
                     return currentLayerShader;
                 } else { // Solid - below current layer shader
                     DefaultShader.Config config = new DefaultShader.Config(
-                            Gdx.files.internal("shaders/lighting.solid.vertex.glsl").readString(), 
+                            Gdx.files.internal("shaders/lighting.solid.vertex.glsl").readString(),
                             Gdx.files.internal("shaders/lighting.fragment.glsl").readString());
                     DefaultShader defaultShader = new DefaultShader(renderable, config) {
                         @Override public boolean canRender(final Renderable renderable) {
@@ -89,7 +90,7 @@ public class Renderer {
         }
         return false;
     }
-    
+
     public DefaultShaderProvider getBottomShaderProvider() {
         return bottomShaderProvider;
     }
@@ -128,7 +129,7 @@ public class Renderer {
         currentLayer = null;
         solidModelBatch.begin(camera);
         for (Layer layer : layers) {
-            layer.render(solidModelBatch, environment);
+            layer.render(solidModelBatch, environment, 0);
         }
         solidModelBatch.end();
         currentLayer = savedCurrentLayer;
@@ -136,12 +137,18 @@ public class Renderer {
 
     public void renderProgress(Camera camera, Environment environment, List<Layer> layers, int startLayerNo, int currentLayerNo, boolean displayTopLayers) {
         solidModelBatch.begin(camera);
+        float zOffset = 0;
+        if (readjustZOffset) {
+            Layer layer = layers.get(startLayerNo);
+            zOffset = layer.getZOffset() - layer.getLayerHeight();
+            zOffset = -zOffset;
+        }
         for (int i = startLayerNo; i < currentLayerNo; i++) {
             Layer layer = layers.get(i);
-            layer.render(solidModelBatch, environment);
+            layer.render(solidModelBatch, environment, zOffset);
         }
         if (currentLayer != null) {
-            currentLayer.render(solidModelBatch, environment);
+            currentLayer.render(solidModelBatch, environment, zOffset);
         }
 
         solidModelBatch.end();
@@ -149,10 +156,18 @@ public class Renderer {
             topModelBatch.begin(camera);
             for (int i = currentLayerNo + 1; i < layers.size(); i++) {
                 if (i >= startLayerNo && i < currentLayerNo) {
-                    layers.get(i).render(topModelBatch, environment);
+                    layers.get(i).render(topModelBatch, environment, zOffset);
                 }
             }
             topModelBatch.end();
         }
+    }
+
+    public boolean isReadjustZOffset() {
+        return readjustZOffset;
+    }
+
+    public void setReadjustZOffset(boolean readjustZOffset) {
+        this.readjustZOffset = readjustZOffset;
     }
 }

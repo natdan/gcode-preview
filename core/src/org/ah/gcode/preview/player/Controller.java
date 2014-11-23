@@ -352,12 +352,14 @@ public class Controller implements InputProcessor {
         if (!gCodeModel.getLayers().isEmpty()) {
             setCurrentLayer(0);
         }
+
         playerRenderer.setCurrentInstructionNo(0);
         setMode(Mode.Play);
     }
 
     public void setTwoDView() {
-        sceneCameraInputController.resetToCentre(middleX, middleY);
+        playerRenderer.setReadjustZOffset(true);
+
         sceneCameraInputController.setTwoDimensions();
 
         currentLayerNo = 0;
@@ -378,6 +380,11 @@ public class Controller implements InputProcessor {
 
     protected void setMode(Mode mode) {
         this.mode = mode;
+        if (mode == Mode.TwoD) {
+            playerRenderer.setReadjustZOffset(true);
+        } else {
+            playerRenderer.setReadjustZOffset(false);
+        }
 //        Panel playPanel = window.getPlayPanel();
 //        if (mode == Mode.Play) {
 //            playPanel.setVisible(true);

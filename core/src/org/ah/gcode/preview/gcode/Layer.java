@@ -143,8 +143,9 @@ public class Layer {
         return mesh;
     }
 
-    public void render(ModelBatch modelBatch, Environment environment) {
+    public void render(ModelBatch modelBatch, Environment environment, float zOffset) {
         if (modelInstance != null) {
+            modelInstance.transform.idt().translate(0, zOffset, 0);
             modelBatch.render(modelInstance, environment);
         }
     }

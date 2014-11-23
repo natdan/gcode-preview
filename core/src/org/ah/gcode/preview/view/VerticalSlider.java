@@ -9,7 +9,7 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.view;
 
@@ -38,23 +38,28 @@ public class VerticalSlider extends Slider {
         int dh = downTexture.getHeight();
         int vw = verticalTexture.getWidth();
         int vh = verticalTexture.getHeight();
-        
+
         int posX = getX();
         int posY = getY();
         int height = getHeight();
 
         int path = height - kh;
-        
+
         spriteBatch.draw(downTexture, posX, posY);
         spriteBatch.draw(upTexture, posX, posY + height - dh);
         spriteBatch.draw(verticalTexture,
                 posX,
-                posY + uh, 
-                vw, height - uh - dh, 
+                posY + uh,
+                vw, height - uh - dh,
                 0, 0, vw, vh, false, false);
-        
+
         for (Knob knob : getKnobs()) {
-            spriteBatch.draw(knobTexture, posX + (uw - kw) / 2, posY + path - knob.getPosition() * path / max);
+            int x = posX + (uw - kw) / 2;
+            int y = 0;
+            if (max != 0) {
+                y = posY + path - knob.getPosition() * path / max;
+            }
+            spriteBatch.draw(knobTexture, x, y);
         }
     }
 
@@ -74,7 +79,7 @@ public class VerticalSlider extends Slider {
             pos = path;
         }
         pos = path - pos;
-        
+
         if (pos == path) {
             getKnobs().get(0).setPosition(getMax());
         } else {
