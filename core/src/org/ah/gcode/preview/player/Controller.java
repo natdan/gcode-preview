@@ -20,12 +20,12 @@ import org.ah.gcode.preview.GCodePreviewWindow;
 import org.ah.gcode.preview.gcode.GCodeModel;
 import org.ah.gcode.preview.gcode.Layer;
 import org.ah.gcode.preview.utils.SceneCameraInputController;
-import org.ah.gcode.preview.view.Button;
-import org.ah.gcode.preview.view.Component;
-import org.ah.gcode.preview.view.Console;
-import org.ah.gcode.preview.view.Panel;
-import org.ah.gcode.preview.view.Slider;
-import org.ah.gcode.preview.view.Slider.Knob;
+import org.ah.libgdx.components.Button;
+import org.ah.libgdx.components.Component;
+import org.ah.libgdx.components.Console;
+import org.ah.libgdx.components.Panel;
+import org.ah.libgdx.components.Slider;
+import org.ah.libgdx.components.Slider.Knob;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;

@@ -11,7 +11,7 @@
  *
  *
  *******************************************************************************/
-package org.ah.gcode.preview.view;
+package org.ah.libgdx.components;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;

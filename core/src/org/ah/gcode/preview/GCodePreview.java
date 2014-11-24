@@ -22,8 +22,8 @@ import org.ah.gcode.preview.gcode.GCodeParser;
 import org.ah.gcode.preview.player.Controller;
 import org.ah.gcode.preview.utils.ModelBuilders;
 import org.ah.gcode.preview.utils.SceneCameraInputController;
-import org.ah.gcode.preview.view.Console;
-import org.ah.gcode.preview.view.Panel;
+import org.ah.libgdx.components.Console;
+import org.ah.libgdx.components.Panel;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;

@@ -13,16 +13,16 @@
  *******************************************************************************/
 package org.ah.gcode.preview;
 
-import org.ah.gcode.preview.view.Button;
-import org.ah.gcode.preview.view.Component;
-import org.ah.gcode.preview.view.Console;
-import org.ah.gcode.preview.view.HorizontalGroup;
-import org.ah.gcode.preview.view.HorizontalSlider;
-import org.ah.gcode.preview.view.Panel;
-import org.ah.gcode.preview.view.Slider;
-import org.ah.gcode.preview.view.VerticalGroup;
-import org.ah.gcode.preview.view.VerticalSlider;
-import org.ah.gcode.preview.view.Window;
+import org.ah.libgdx.components.Button;
+import org.ah.libgdx.components.Component;
+import org.ah.libgdx.components.Console;
+import org.ah.libgdx.components.HorizontalGroup;
+import org.ah.libgdx.components.HorizontalSlider;
+import org.ah.libgdx.components.Panel;
+import org.ah.libgdx.components.Slider;
+import org.ah.libgdx.components.VerticalGroup;
+import org.ah.libgdx.components.VerticalSlider;
+import org.ah.libgdx.components.Window;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g3d.utils.TextureProvider;
@@ -140,8 +140,6 @@ public class GCodePreviewWindow extends Window {
             hideSliderPanelButton.setSize(hideSliderPanel.getWidth(), hideSliderPanel.getHeight());
             hideSliderPanel.refresh();
 
-//            playPanel.setPosition((width - playPanel.getWidth()) / 2, 3);
-
             if (overOKCancel) {
                 cancelButton.setVisible(true);
                 okButton.setSize(okButton.getPreferredWidth(), okButton.getPreferredHeight());
@@ -154,13 +152,8 @@ public class GCodePreviewWindow extends Window {
             okCancelGroup.setPosition(width - okCancelGroup.getWidth() - 3, height - okCancelGroup.getHeight() - 3);
             okCancelGroup.doLayout();
 
-//            if (console.isVisible()) {
-                horizontalSlider.setPosition(hideSliderPanel.getX() + hideSliderPanel.getWidth() + 5, height - horizontalSlider.getHeight() - 3);
-                horizontalSlider.setSize(okButton.getX() - hideSliderPanel.getX() - hideSliderPanel.getWidth() - 5 - 3, height);
-//            } else {
-//                horizontalSlider.setPosition(3, height - horizontalSlider.getHeight() - 3);
-//                horizontalSlider.setSize(okCancelGroup.getX() - 6, horizontalSlider.getHeight());
-//            }
+            horizontalSlider.setPosition(hideSliderPanel.getX() + hideSliderPanel.getWidth() + 5, height - horizontalSlider.getHeight() - 3);
+            horizontalSlider.setSize(okButton.getX() - hideSliderPanel.getX() - hideSliderPanel.getWidth() - 5 - 3, height);
 
             verticalSlider.setPosition(width - verticalSlider.getWidth() - 3, 3);
             verticalSlider.setSize(verticalSlider.getWidth(), okCancelGroup.getY() - 6);

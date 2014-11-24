@@ -11,74 +11,73 @@
  *
  *
  *******************************************************************************/
-package org.ah.gcode.preview.view;
+package org.ah.libgdx.components;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.utils.TextureProvider;
 
-public class VerticalSlider extends Slider {
+public class HorizontalSlider extends Slider {
 
-    private Texture upTexture;
-    private Texture downTexture;
-    private Texture verticalTexture;
+    private Texture leftTexture;
+    private Texture rightTexture;
+    private Texture horizontal;
 
-    public VerticalSlider(TextureProvider textureProvider) {
+    public HorizontalSlider(TextureProvider textureProvider) {
         super(textureProvider);
-        upTexture = textureProvider.load("gui/slider-end-up.png");
-        downTexture = textureProvider.load("gui/slider-end-down.png");
-        verticalTexture = textureProvider.load("gui/slider-vertical.png");
+        leftTexture = textureProvider.load("gui/slider-end-left.png");
+        rightTexture = textureProvider.load("gui/slider-end-right.png");
+        horizontal = textureProvider.load("gui/slider-horizontal.png");
     }
 
     public void render(SpriteBatch spriteBatch) {
         int kw = knobTexture.getWidth();
         int kh = knobTexture.getHeight();
-        int uw = upTexture.getWidth();
-        int uh = upTexture.getHeight();
-        int dh = downTexture.getHeight();
-        int vw = verticalTexture.getWidth();
-        int vh = verticalTexture.getHeight();
+        int lw = leftTexture.getWidth();
+        int lh = leftTexture.getHeight();
+        int hw = horizontal.getWidth();
+        int hh = horizontal.getHeight();
+        int rw = rightTexture.getWidth();
 
         int posX = getX();
         int posY = getY();
-        int height = getHeight();
+        int width = getWidth();
 
-        int path = height - kh;
+        int path = width - kw;
 
-        spriteBatch.draw(downTexture, posX, posY);
-        spriteBatch.draw(upTexture, posX, posY + height - dh);
-        spriteBatch.draw(verticalTexture,
-                posX,
-                posY + uh,
-                vw, height - uh - dh,
-                0, 0, vw, vh, false, false);
+        spriteBatch.draw(leftTexture, posX, posY);
+        spriteBatch.draw(rightTexture, posX + width - rw, posY);
+
+        spriteBatch.draw(horizontal, posX + lw, posY, width - lw - rw, hh,
+                0, 0, hw, hh, false, false);
 
         for (Knob knob : getKnobs()) {
-            int x = posX + (uw - kw) / 2;
-            int y = 0;
+            int x = 0;
             if (max != 0) {
-                y = posY + path - knob.getPosition() * path / max;
+                x = posX + knob.getPosition() * path / max;
             }
+            int y = posY + (lh - kh) / 2;
             spriteBatch.draw(knobTexture, x, y);
         }
     }
 
     @Override
-    public int getWidth() {
-        return upTexture.getWidth();
+    public int getHeight() {
+        return leftTexture.getHeight();
     }
 
     @Override
     public boolean receiveTouchDragged(int screenX, int screenY, int pointer) {
-        int h = knobTexture.getHeight();
-        int path = getHeight() - h;
-        int pos = screenY - getY() - h / 2;
+        int w = knobTexture.getWidth();
+        int path = getWidth() - w;
+
+        int pos = screenX - getX() - w / 2;
+
         if (pos < 0) {
             pos = 0;
         } else if (pos > path) {
             pos = path;
         }
-        pos = path - pos;
 
         if (pos == path) {
             getKnobs().get(0).setPosition(getMax());

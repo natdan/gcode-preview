@@ -1,4 +1,4 @@
-package org.ah.gcode.preview.view;
+package org.ah.libgdx.components;
 
 
 public class Group extends Component {
