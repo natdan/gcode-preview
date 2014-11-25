@@ -18,6 +18,8 @@ import org.ah.libgdx.components.Component;
 import org.ah.libgdx.components.Console;
 import org.ah.libgdx.components.HorizontalGroup;
 import org.ah.libgdx.components.HorizontalSlider;
+import org.ah.libgdx.components.Image;
+import org.ah.libgdx.components.Label;
 import org.ah.libgdx.components.Panel;
 import org.ah.libgdx.components.Slider;
 import org.ah.libgdx.components.VerticalGroup;
@@ -27,6 +29,10 @@ import org.ah.libgdx.components.Window;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g3d.utils.TextureProvider;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class GCodePreviewWindow extends Window {
 
     private Console console;
@@ -39,6 +45,8 @@ public class GCodePreviewWindow extends Window {
     private HorizontalGroup okCancelGroup;
     private Panel hideSliderPanel;
     private Button hideSliderPanelButton;
+    private Button twoDButton;
+    private Button threeDButton;
 
     private VerticalGroup leftPanel;
 
@@ -57,11 +65,15 @@ public class GCodePreviewWindow extends Window {
 
         fpsPanel = new Panel(font, (int)font.getBounds("FPS: 00.00 ").width);
         fpsPanel.setPosition(3, 3);
-        leftPanel.addChild(fpsPanel);
+        addChild(fpsPanel);
 
-        playPanel = new Panel(font, (int)font.getBounds("Instr: 00000000/00000000").width, (int)font.getLineHeight() * 3 + 4);
+        Button detailsHeaderButton = createDarkButtonHeader(font, "Details:");
+        leftPanel.addChild(detailsHeaderButton);
+        playPanel = new Panel(font, (int)font.getBounds("Instr: 00000000/00000000").width, (int)font.getLineHeight() * 5 + 4);
         leftPanel.addChild(playPanel);
 
+        Button consoleHeaderButton = createDarkButtonHeader(font, "Console:");
+        leftPanel.addChild(consoleHeaderButton);
         console = new Console(font, 320, 240, 5, 5);
         console.println("GCode Preview 0.1a");
         console.println("(C) Abstract Horizon");
@@ -74,8 +86,7 @@ public class GCodePreviewWindow extends Window {
         hideSliderPanel.setBackgroundColor(hideSliderPanel.getBackgroundColor().sub(0.25f, 0.25f, 0.25f, 0f));
         hideSliderPanel.refresh();
         addChild(hideSliderPanel);
-        hideSliderPanelButton = new Button(textureProvider.load("gui/three-circles-dark.png"), textureProvider.load("gui/three-circles-light.png"));
-        hideSliderPanelButton.setStretchImage(false);
+        hideSliderPanelButton = createButton(textureProvider,"gui/three-circles", false);
         hideSliderPanelButton.registerButtonClickedListener((Button button) -> leftPanel.setVisible(!leftPanel.isVisible()));
         addChild(hideSliderPanelButton);
 
@@ -84,9 +95,9 @@ public class GCodePreviewWindow extends Window {
         verticalSlider = new VerticalSlider(textureProvider);
         addChild(verticalSlider);
 
-        okButton = new Button(textureProvider.load("gui/ok-button.png"), textureProvider.load("gui/ok-button-selected.png"));
+        okButton = createButton(textureProvider, "gui/ok", true);
         okButton.setPreferredSize(32, 32);
-        cancelButton = new Button(textureProvider.load("gui/cancel-button.png"), textureProvider.load("gui/cancel-button-selected.png"));
+        cancelButton = createButton(textureProvider, "gui/cancel", true);
         cancelButton.setVisible(false);
         cancelButton.setSize(32, 32);
         cancelButton.setPreferredSize(32, 32);
@@ -97,6 +108,12 @@ public class GCodePreviewWindow extends Window {
         okCancelGroup.addChild(okButton);
         addChild(okCancelGroup);
         okCancelGroup.registerMouseOverListener(this::mouseOverListener);
+
+        twoDButton = createTextButton(font, " 2D  ");
+        addChild(twoDButton);
+
+        threeDButton = createTextButton(font, " 3D  ");
+        addChild(threeDButton);
 
         initialised = true;
         doLayout();
@@ -121,6 +138,8 @@ public class GCodePreviewWindow extends Window {
     public Button getOKButton() { return okButton; }
     public Button getCancelButton() { return cancelButton; }
     public Component getLeftPanel() { return leftPanel; }
+    public Button getTwoDButton() { return twoDButton; }
+    public Button getThreeDButton() { return threeDButton; }
 
     @Override
     protected void doLayout() {
@@ -153,10 +172,85 @@ public class GCodePreviewWindow extends Window {
             okCancelGroup.doLayout();
 
             horizontalSlider.setPosition(hideSliderPanel.getX() + hideSliderPanel.getWidth() + 5, height - horizontalSlider.getHeight() - 3);
-            horizontalSlider.setSize(okButton.getX() - hideSliderPanel.getX() - hideSliderPanel.getWidth() - 5 - 3, height);
+            horizontalSlider.setSize(okCancelGroup.getX() - hideSliderPanel.getX() - hideSliderPanel.getWidth() - 5 - 3, height);
 
             verticalSlider.setPosition(width - verticalSlider.getWidth() - 3, 3);
             verticalSlider.setSize(verticalSlider.getWidth(), okCancelGroup.getY() - 6);
+
+            fpsPanel.setPosition(verticalSlider.getX() - 10 - fpsPanel.getWidth(), 0);
+
+            twoDButton.setPosition(hideSliderPanel.getX() + hideSliderPanel.getWidth() + 10, 0);
+            threeDButton.setPosition(twoDButton.getX() + twoDButton.getWidth() + 3, 0);
         }
+    }
+
+    public Button createButton(TextureProvider textureProvider, String buttonImageName, boolean stretched) {
+        Image buttonImage = new Image(textureProvider.load(buttonImageName + ".png"));
+        buttonImage.setStretchImage(stretched);
+
+        Image mouseOverImage = new Image(textureProvider.load(buttonImageName + "-over.png"));
+        mouseOverImage.setStretchImage(stretched);
+
+        Image selectedImage = new Image(textureProvider.load(buttonImageName + "-selected.png"));
+        selectedImage.setStretchImage(stretched);
+
+        Button button = new Button(buttonImage, mouseOverImage, selectedImage);
+        return button;
+    }
+
+    public Button createButton(TextureProvider textureProvider, String buttonImageName, String mouseOverImageName, String selectedImageName, boolean stretched) {
+        Image buttonImage = new Image(textureProvider.load(buttonImageName));
+        buttonImage.setStretchImage(stretched);
+        Image mouseOverImage = null;
+        if (mouseOverImageName != null) {
+            mouseOverImage = new Image(textureProvider.load(mouseOverImageName));
+            mouseOverImage.setStretchImage(stretched);
+        }
+        Image selectedImage = null;
+        if (selectedImageName != null) {
+            selectedImage = new Image(textureProvider.load(selectedImageName));
+            selectedImage.setStretchImage(stretched);
+        }
+        Button button = new Button(buttonImage, mouseOverImage, selectedImage);
+        return button;
+    }
+
+    public Button createDarkButtonHeader(BitmapFont font, String headerText) {
+        Label textPanel = new Label(font, headerText, 3, 3);
+        textPanel.setBackgroundColor(textPanel.getBackgroundColor().sub(0.2f, 0.2f, 0.2f, 0f));
+        textPanel.clear();
+        textPanel.text(headerText, 0);
+
+        Label mouseOverPanel = new Label(font, headerText, 3, 3);
+        mouseOverPanel.setBackgroundColor(mouseOverPanel.getBackgroundColor().add(0.2f, 0.2f, 0.2f, 0f));
+        mouseOverPanel.clear();
+        mouseOverPanel.text(headerText, 0);
+
+        Label selectedPanel = new Label(font, headerText, 3, 3);
+        selectedPanel.setBackgroundColor(selectedPanel.getBackgroundColor().add(0.4f, 0.4f, 0.4f, 0f));
+        selectedPanel.clear();
+        selectedPanel.text(headerText, 0);
+
+        Button button = new Button(textPanel, mouseOverPanel, selectedPanel);
+        return button;
+    }
+
+    public Button createTextButton(BitmapFont font, String buttonText) {
+        Panel textPanel = new Panel(font, (int)font.getBounds(buttonText).width, (int)font.getLineHeight(), 3, 3);
+        textPanel.setBackgroundColor(textPanel.getBackgroundColor().add(0.5f, 0.5f, 0.5f, 0f));
+        textPanel.clear();
+        textPanel.text(buttonText, 0);
+
+        Panel mouseOverPanel = new Panel(font, (int)font.getBounds(buttonText).width, (int)font.getLineHeight(), 3, 3);
+        mouseOverPanel.setBackgroundColor(mouseOverPanel.getBackgroundColor().add(0.2f, 0.2f, 0.2f, 0f));
+        mouseOverPanel.clear();
+        mouseOverPanel.text(buttonText, 0);
+
+        Panel selectedPanel = new Panel(font, (int)font.getBounds(buttonText).width, (int)font.getLineHeight(), 3, 3);
+        selectedPanel.clear();
+        selectedPanel.text(buttonText, 0);
+
+        Button button = new Button(textPanel, mouseOverPanel, selectedPanel);
+        return button;
     }
 }

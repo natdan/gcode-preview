@@ -17,6 +17,10 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.utils.TextureProvider;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class HorizontalSlider extends Slider {
 
     private Texture leftTexture;

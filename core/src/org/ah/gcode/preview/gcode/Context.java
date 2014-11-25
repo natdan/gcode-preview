@@ -9,14 +9,18 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.gcode;
 
 import com.badlogic.gdx.graphics.g3d.Material;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class Context {
 
     public Material material;
-    
+
 }

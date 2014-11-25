@@ -9,10 +9,14 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.player;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class PrintPlayer {
 
 }

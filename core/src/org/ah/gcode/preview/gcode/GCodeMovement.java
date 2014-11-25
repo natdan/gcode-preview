@@ -17,7 +17,10 @@ import org.ah.gcode.preview.gcode.Layer.MeshDetails;
 
 import com.badlogic.gdx.math.Vector3;
 
-
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class GCodeMovement {
 
     public static float MOVE_WIDTH = 0.4f;

@@ -26,6 +26,7 @@ import org.ah.libgdx.components.Console;
 import org.ah.libgdx.components.Panel;
 import org.ah.libgdx.components.Slider;
 import org.ah.libgdx.components.Slider.Knob;
+import org.ah.libgdx.utils.FPSCalculator;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
@@ -33,6 +34,10 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class Controller implements InputProcessor {
 
     public static enum Mode {
@@ -80,8 +85,12 @@ public class Controller implements InputProcessor {
     private Knob verticalKnob;
 
     private long consoleAtStartup;
+    private long fpsAtStartup = System.currentTimeMillis();
 
     private int consoleAtStartupTimeout = 2000;
+    private int fpsAtStartupTimeout = 6000;
+
+    private FPSCalculator fpsCalculator;
 
     public Controller(GCodeModel gCodeModel,
             GCodePreviewWindow window,
@@ -91,6 +100,8 @@ public class Controller implements InputProcessor {
         this.window = window;
         this.sceneCameraInputController = sceneCameraInputController;
         this.exitCallback = exitCallback;
+
+        fpsCalculator = new FPSCalculator();
 
         horizontalSlider = window.getHorizontalSlider();
         horizontalKnob = horizontalSlider.getKnobs().get(0);
@@ -128,6 +139,13 @@ public class Controller implements InputProcessor {
         middleX = gCodeModel.getBedWidth() / 2;
         middleY = gCodeModel.getBedHeight() / 2;
         sceneCameraInputController.resetToCentre(middleX, middleY);
+
+        window.getTwoDButton().registerButtonClickedListener((Button b) -> {
+            setTwoDView();
+        });
+        window.getThreeDButton().registerButtonClickedListener((Button b) -> {
+            displayAll();
+        });
     }
 
     public Component getLeftPanel() { return leftPanel; }
@@ -143,7 +161,7 @@ public class Controller implements InputProcessor {
         console.println("3 - 3d view");
         console.println("p - play printing");
         console.println("l - cycle through layers");
-        console.println("c - toggle console on/off");
+        console.println("f - toggle fps panel on/off");
         console.println();
     }
 
@@ -185,6 +203,8 @@ public class Controller implements InputProcessor {
             }
             leftPanel.setVisible(!console.isVisible());
             return true;
+        } else if (character == 'f') {
+            window.getFPSPanel().setVisible(!window.getFPSPanel().isVisible());
         } else if (character == 'l') {
             sceneCameraInputController.setThreeDimensions();
             startCyclingThroughLayers();
@@ -194,7 +214,6 @@ public class Controller implements InputProcessor {
             startPlaying();
             return true;
         } else if (character == '3' || character == 'a') {
-            sceneCameraInputController.setThreeDimensions();
             displayAll();
             return true;
         } else if (character == '2') {
@@ -271,11 +290,31 @@ public class Controller implements InputProcessor {
         return consumed;
     }
 
+    private int lastLayerNo;
+    private int lastInstructionNo;
+
     public void render(Camera camera, Environment environment) {
         if (consoleAtStartup > 0) {
             if (System.currentTimeMillis() - consoleAtStartup > consoleAtStartupTimeout) {
                 consoleAtStartup = 0;
                 leftPanel.setVisible(false);
+            }
+        }
+        Panel fpsPanel = window.getFPSPanel();
+        if (fpsAtStartup > 0) {
+            if (System.currentTimeMillis() - fpsAtStartup > fpsAtStartupTimeout) {
+                fpsAtStartup = 0;
+                fpsPanel.setVisible(false);
+            }
+        }
+
+        if (fpsCalculator.calcFps()) {
+            if (fpsCalculator.getFPSasInteger() < 1000) {
+                fpsPanel.setVisible(true);
+            }
+            if (fpsPanel.isVisible()) {
+                fpsPanel.refresh();
+                fpsPanel.text("fps: " + fpsCalculator.getFPSText(), 0);
             }
         }
 
@@ -337,23 +376,31 @@ public class Controller implements InputProcessor {
         } else if (mode == Mode.TwoD) {
             playerRenderer.renderProgress(camera, environment, layers, currentLayerNo, currentLayerNo, false);
         } else {
-            setCurrentLayer(currentLayerNo);
             playerRenderer.renderProgress(camera, environment, layers, 0, currentLayerNo, displayTopLayers);
-            // playerRenderer.renderSolid(camera, environment, layers);
         }
 
         if (mode != Mode.Loading) {
-            playPanel.refresh();
+            if (lastLayerNo != getCurrentLayerNo() || lastInstructionNo != getCurrentInstructionNo()) {
+                lastLayerNo = getCurrentLayerNo();
+                lastInstructionNo = getCurrentInstructionNo();
+                playPanel.clear();
 
-            if (getCurrentLayerNo() >= gCodeModel.getLayers().size()) {
-                playPanel.text("Layer: ALL /" + gCodeModel.getLayers().size(), 0);
-                playPanel.text("Instr: ", 1);
-            } else {
-                playPanel.text("Layer: " + Integer.toString(getCurrentLayerNo() + 1) + "/" + gCodeModel.getLayers().size(), 0);
-                playPanel.text("Instr: " + Integer.toString(getCurrentInstructionNo()) + "/" + getCurrentInstructionMax(), 1);
-            }
-            if (mode == Mode.Play) {
-                playPanel.text("Speed: " + Integer.toString(getInsrtuctionsSpeed()), 2);
+                Layer layer = getCurrentLayer();
+                if (getCurrentLayerNo() >= gCodeModel.getLayers().size()) {
+                    playPanel.text("Layer: ALL /" + gCodeModel.getLayers().size(), 0);
+                    playPanel.text("Instr: ", 1);
+                } else {
+                    playPanel.text("Layer: " + Integer.toString(getCurrentLayerNo() + 1) + " / " + gCodeModel.getLayers().size(), 0);
+                    playPanel.text("Instr: " + Integer.toString(getCurrentInstructionNo()) + " / " + getCurrentInstructionMax(), 1);
+                    if (layer != null) {
+                        playPanel.text("", 2);
+                        playPanel.text("Layer zOffset: " + Float.toString(layer.getZOffset()), 3);
+                        playPanel.text("Layer thickness: " + Float.toString(layer.getLayerHeight()), 4);
+                    }
+                }
+                if (mode == Mode.Play) {
+                    playPanel.text("Speed: " + Integer.toString(getInsrtuctionsSpeed()), 2);
+                }
             }
         }
     }
@@ -377,19 +424,28 @@ public class Controller implements InputProcessor {
     }
 
     public void setTwoDView() {
+        window.getTwoDButton().setToggled(true);
+        window.getThreeDButton().setToggled(false);
         playerRenderer.setReadjustZOffset(true);
 
         sceneCameraInputController.setTwoDimensions();
 
-        currentLayerNo = 0;
+//        currentLayerNo = 0;
         paused = false;
         if (!gCodeModel.getLayers().isEmpty()) {
-            setCurrentLayer(0);
+            if (currentLayerNo >= gCodeModel.getLayers().size()) {
+                setCurrentLayer(gCodeModel.getLayers().size() - 1);
+            } else {
+                setCurrentLayer(currentLayerNo);
+            }
         }
         setMode(Mode.TwoD);
     }
 
     public void displayAll() {
+        window.getTwoDButton().setToggled(false);
+        window.getThreeDButton().setToggled(true);
+        sceneCameraInputController.setThreeDimensions();
         setMode(Mode.DisplayAll);
     }
 
@@ -437,34 +493,43 @@ public class Controller implements InputProcessor {
         return currentLayerNo;
     }
 
+    public Layer getCurrentLayer() {
+        if (currentLayerNo >= gCodeModel.getLayers().size()) {
+            return null;
+        }
+        return gCodeModel.getLayers().get(currentLayerNo);
+    }
+
     public void setCurrentLayer(int layerNo) {
-        Layer layer = null;
-        int layersNumber = gCodeModel.getLayers().size();
-        if (getMode() == Mode.TwoD) {
-            // In Two-D mode we don't want to display layer above last (no layers selected as green)
-            layersNumber = gCodeModel.getLayers().size() - 1;
-        }
-        if (layerNo >= gCodeModel.getLayers().size()) {
+//        if (layerNo != currentLayerNo) {
+            Layer layer = null;
+            int layersNumber = gCodeModel.getLayers().size();
             if (getMode() == Mode.TwoD) {
-                layerNo = gCodeModel.getLayers().size() - 1;
+                // In Two-D mode we don't want to display layer above last (no layers selected as green)
+                layersNumber = gCodeModel.getLayers().size() - 1;
+            }
+            if (layerNo >= gCodeModel.getLayers().size()) {
+                if (getMode() == Mode.TwoD) {
+                    layerNo = gCodeModel.getLayers().size() - 1;
+                } else {
+                    layerNo = gCodeModel.getLayers().size();
+                }
             } else {
-                layerNo = gCodeModel.getLayers().size();
+                if (layerNo < 0) {
+                    layerNo = 0;
+                }
+                layer = gCodeModel.getLayers().get(layerNo);
             }
-        } else {
-            if (layerNo < 0) {
-                layerNo = 0;
+            currentLayerNo = layerNo;
+            playerRenderer.setCurrentLayer(layer);
+            if (layer != null) {
+                horizontalSlider.setMax(layer.getNumberOfInstructions());
+                horizontalKnob.setPosition(horizontalSlider.getMax());
+                playerRenderer.setCurrentInstructionNo(horizontalSlider.getMax());
             }
-            layer = gCodeModel.getLayers().get(layerNo);
-        }
-        currentLayerNo = layerNo;
-        playerRenderer.setCurrentLayer(layer);
-        if (layer != null) {
-            horizontalSlider.setMax(layer.getNumberOfInstructions());
-            horizontalKnob.setPosition(horizontalSlider.getMax());
-            playerRenderer.setCurrentInstructionNo(horizontalSlider.getMax());
-        }
-        verticalSlider.setMax(layersNumber);
-        verticalKnob.setPosition(layerNo);
+            verticalSlider.setMax(layersNumber);
+            verticalKnob.setPosition(layerNo);
+//        }
     }
 
     public void consoleAtStartup() {

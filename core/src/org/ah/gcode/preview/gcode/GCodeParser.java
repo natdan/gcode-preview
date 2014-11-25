@@ -17,6 +17,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class GCodeParser {
 
     public static enum DetectedSlicer {

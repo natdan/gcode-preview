@@ -9,7 +9,7 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.utils;
 
@@ -19,7 +19,6 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.model.NodePart;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
@@ -27,10 +26,14 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class ModelBuilders {
 
     public static final float FULL_CIRCLE = (float)(Math.PI * 2);
-    
+
     public static Mesh createRectX(float x, float y, float z, float width, float height, int normal) {
 
         Mesh mesh = new Mesh(true, 4, 6, VertexAttribute.Position(), VertexAttribute.ColorUnpacked(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
@@ -111,7 +114,7 @@ public class ModelBuilders {
         float innerDiameter = 2f;
 
         int sections = 20;
-        float angle = (float) (FULL_CIRCLE / sections);
+        float angle = FULL_CIRCLE / sections;
 
         Mesh mesh = new Mesh(true, sections * 2, sections * 12, VertexAttribute.Position(), VertexAttribute.ColorUnpacked(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
 
@@ -212,11 +215,11 @@ public class ModelBuilders {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.begin();
 
-        float zAngle = (float) (FULL_CIRCLE / zSections);
-        float xAngle = (float) (FULL_CIRCLE / xSections);
+        float zAngle = FULL_CIRCLE / zSections;
+        float xAngle = FULL_CIRCLE / xSections;
 
-        Mesh mesh = new Mesh(true, zSections * xSections, zSections * xSections * 6, 
-                VertexAttribute.Position(), VertexAttribute.ColorUnpacked(), 
+        Mesh mesh = new Mesh(true, zSections * xSections, zSections * xSections * 6,
+                VertexAttribute.Position(), VertexAttribute.ColorUnpacked(),
                 VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
 
         float[] vertices = new float[zSections * xSections * 12];
@@ -238,7 +241,7 @@ public class ModelBuilders {
 
         modelBuilder.part("torus", mesh, GL20.GL_TRIANGLES, material);
         Model model = modelBuilder.end();
-        
+
         return model;
     }
 
@@ -247,17 +250,17 @@ public class ModelBuilders {
         modelBuilder.begin();
         createTorus2(modelBuilder, material, zDiameter, xDiameter, zSections, xSections);
         Model model = modelBuilder.end();
-        
+
         return model;
     }
-    
+
     public static void createTorus2(ModelBuilder modelBuilder, Material material, float zDiameter, float xDiameter, int zSections, int xSections) {
 
-        float zAngle = (float) (FULL_CIRCLE / zSections);
-        float xAngle = (float) (FULL_CIRCLE / xSections);
+        float zAngle = FULL_CIRCLE / zSections;
+        float xAngle = FULL_CIRCLE / xSections;
 
-        Mesh mesh = new Mesh(true, (zSections + 1) * (xSections + 1), zSections * xSections * 6, 
-                VertexAttribute.Position(), VertexAttribute.ColorUnpacked(), 
+        Mesh mesh = new Mesh(true, (zSections + 1) * (xSections + 1), zSections * xSections * 6,
+                VertexAttribute.Position(), VertexAttribute.ColorUnpacked(),
                 VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
 
         float[] vertices = new float[(zSections + 1) * (xSections + 1) * 12];
@@ -285,16 +288,16 @@ public class ModelBuilders {
         modelBuilder.begin();
         createTorus3(modelBuilder, material, zDiameter, xDiameter, zSections, xSections, bones);
         Model model = modelBuilder.end();
-        
+
         return model;
     }
-    
-    public static void createTorus3(ModelBuilder modelBuilder, Material material, 
+
+    public static void createTorus3(ModelBuilder modelBuilder, Material material,
             float zDiameter, float xDiameter, int zSections, int xSections, int bones) {
 
-        float zAngle = (float) (FULL_CIRCLE / zSections);
-        float xAngle = (float) (FULL_CIRCLE / xSections);
-        float boneAngle = (float) (FULL_CIRCLE / bones);
+        float zAngle = FULL_CIRCLE / zSections;
+        float xAngle = FULL_CIRCLE / xSections;
+        float boneAngle = FULL_CIRCLE / bones;
 
         Mesh mesh = new Mesh(true, (zSections + 1) * (xSections + 1), zSections * xSections * 6,
                 VertexAttribute.Position(), VertexAttribute.ColorUnpacked(), VertexAttribute.Normal(),
@@ -306,7 +309,7 @@ public class ModelBuilders {
         int bone2Index = 0;
         float bone1Weight = 0.0f;
         float bone2Weight = 0.0f;
-        
+
         float zSectionToBoneRatio = (float)(zSections + 1) / (float)bones;
         float zSectionAngle = 0.0f;
         float zSectionWeight = 0.0f;
@@ -321,7 +324,7 @@ public class ModelBuilders {
             if (bone2Index >= bones) {
                 bone2Index = 0;
             }
-            
+
             zSectionAngle = i * zAngle - bone1Index * boneAngle;
             if (zSectionAngle > FULL_CIRCLE) {
                 zSectionAngle = zSectionAngle - FULL_CIRCLE;
@@ -352,7 +355,7 @@ public class ModelBuilders {
         for (int i = 0; i < boneMatrixes.length; i++) {
             boneMatrixes[i] = new Matrix4().idt();
         }
-        
+
         Array<NodePart> parts = node.parts;
         Object[] items = parts.items;
         NodePart item = (NodePart)items[0];
@@ -364,8 +367,8 @@ public class ModelBuilders {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.begin();
 
-        float zAngle = (float) (FULL_CIRCLE / zSections);
-        float xAngle = (float) (FULL_CIRCLE / xSections);
+        float zAngle = FULL_CIRCLE / zSections;
+        float xAngle = FULL_CIRCLE / xSections;
 
         Mesh mesh = new Mesh(true, (zSections + 1) * (xSections + 1), zSections * xSections * 6, VertexAttribute.Position(), VertexAttribute.ColorUnpacked(), VertexAttribute.Normal(),
                 VertexAttribute.TexCoords(0));
@@ -390,7 +393,7 @@ public class ModelBuilders {
 
         modelBuilder.part("torus", mesh, GL20.GL_TRIANGLES, material);
         Model model = modelBuilder.end();
-        
+
         return model;
     }
 
@@ -513,12 +516,12 @@ public class ModelBuilders {
         vertices[v + 9] = vector.z;
 
         // Texture coordinates
-        vertices[v + 10] = (float) ((float)i / (zSections - 1));
-        vertices[v + 11] = (float) ((float)j / (xSections - 1));
+        vertices[v + 10] = (float)i / (zSections - 1);
+        vertices[v + 11] = (float)j / (xSections - 1);
     }
 
     private static Vector3 vector = new Vector3();
-    
+
     private static void createTorusVertice2(float zDiameter, float xDiameter, int zSections, int xSections, float zAngle, float xAngle, float[] vertices, int j, int i, int v) {
         float xx = (float) (Math.cos(xAngle * j + Math.PI)) * xDiameter;
         float zx = (float) (Math.sin(xAngle * j + Math.PI)) * xDiameter;
@@ -550,11 +553,11 @@ public class ModelBuilders {
         vertices[v + 9] = vector.z;
 
         // Texture coordinates
-        vertices[v + 10] = (float) ((float)i / zSections);
-        vertices[v + 11] = (float) ((float)j / xSections);
+        vertices[v + 10] = (float)i / zSections;
+        vertices[v + 11] = (float)j / xSections;
     }
 
-    private static void createTorusVertice3(float zDiameter, float xDiameter, int zSections, int xSections, float zAngle, float xAngle, 
+    private static void createTorusVertice3(float zDiameter, float xDiameter, int zSections, int xSections, float zAngle, float xAngle,
             float[] vertices, int j, int i, int v, int bone1, float bone1Weight, int bone2, float bone2Weight) {
         float xx = (float) (Math.cos(xAngle * j + Math.PI)) * xDiameter;
         float zx = (float) (Math.sin(xAngle * j + Math.PI)) * xDiameter;
@@ -586,12 +589,12 @@ public class ModelBuilders {
         vertices[v + 9] = vector.z;
 
         // Texture coordinates
-        vertices[v + 10] = (float) ((float)i / zSections);
-        vertices[v + 11] = (float) ((float)j / xSections);
-        
+        vertices[v + 10] = (float)i / zSections;
+        vertices[v + 11] = (float)j / xSections;
+
         vertices[v + 12] = bone1;
         vertices[v + 13] = bone1Weight;
-        
+
         vertices[v + 14] = bone2;
         vertices[v + 15] = bone2Weight;
     }
@@ -627,7 +630,7 @@ public class ModelBuilders {
         vertices[v + 9] = vector.z;
 
         // Texture coordinates
-        vertices[v + 10] = (float) ((float)i / zSections);
-        vertices[v + 11] = (float) ((float)j / xSections);
+        vertices[v + 10] = (float)i / zSections;
+        vertices[v + 11] = (float)j / xSections;
     }
 }

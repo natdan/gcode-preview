@@ -9,12 +9,15 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *
  *******************************************************************************/
 package org.ah.libgdx.components;
 
 import java.util.List;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class Window extends Component {
 
     public Window(int posX, int posY, int width, int height) {

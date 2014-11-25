@@ -9,16 +9,20 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.gcode;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class Point {
 
     public float x;
     public float y;
     public float z;
-    
+
     public Point() {
         x = 0f;
         y = 0f;

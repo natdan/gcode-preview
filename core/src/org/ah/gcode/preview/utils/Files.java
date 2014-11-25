@@ -9,7 +9,7 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.gcode.preview.utils;
 
@@ -22,10 +22,14 @@ import java.util.List;
 
 import com.badlogic.gdx.files.FileHandle;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class Files {
-    
+
     private Files() { }
-    
+
     public static List<String> readLines(FileHandle handle) throws IOException {
         return Files.readLines(handle.read());
     }

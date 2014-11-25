@@ -25,6 +25,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class Panel extends Component {
 
     public static enum Alignment {
@@ -58,7 +62,7 @@ public class Panel extends Component {
     }
 
     public Panel(BitmapFont font, int width, int height, int xPadding, int yPadding) {
-        super(width, height);
+        super(width + xPadding, height + yPadding);
 
         this.font = font;
         this.xPadding = xPadding;
@@ -75,7 +79,7 @@ public class Panel extends Component {
         batch.enableBlending();
         batch.setProjectionMatrix(camera.combined);
 
-        refresh();
+        clear();
     }
 
     public void dispose() {
@@ -96,6 +100,10 @@ public class Panel extends Component {
     }
 
     public void refresh() {
+        clear();
+    }
+
+    public void clear() {
         frameBuffer.begin();
         Color backgroundColor = getBackgroundColor();
         Gdx.gl.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);

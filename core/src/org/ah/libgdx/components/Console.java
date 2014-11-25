@@ -22,6 +22,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class Console extends Panel {
 
     private List<String> lines = new ArrayList<String>();

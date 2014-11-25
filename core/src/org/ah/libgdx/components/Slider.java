@@ -9,7 +9,7 @@
  *    Creative Sphere - initial API and implementation
  *
  *
- *   
+ *
  *******************************************************************************/
 package org.ah.libgdx.components;
 
@@ -19,22 +19,26 @@ import java.util.List;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.utils.TextureProvider;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class Slider extends Component {
 
     protected Texture knobTexture;
 
     protected int max = 100;
     protected List<Knob> knobs = new ArrayList<Knob>(2);
-    
+
     public Slider(TextureProvider textureProvider) {
         knobTexture = textureProvider.load("gui/knob.png");
         knobs.add(new Knob()); // Default
     }
-    
+
     public void setMax(int max) {
         this.max = max;
     }
-    
+
     public int getMax() {
         return max;
     }
@@ -42,7 +46,7 @@ public class Slider extends Component {
     public List<Knob> getKnobs() {
         return knobs;
     }
-    
+
     @Override
     public boolean receiveTouchDown(int screenX, int screenY, int pointer, int button) {
         return true;
@@ -52,7 +56,7 @@ public class Slider extends Component {
     public boolean receiveTouchUp(int screenX, int screenY, int pointer, int button) {
         return true;
     }
-    
+
     public class Knob {
         protected int position;
         protected PositionChangedListener positionChangedListener;
@@ -73,15 +77,15 @@ public class Slider extends Component {
         public int getPosition() {
             return position;
         }
-        
+
         public void setPositionChangedListener(PositionChangedListener listener) {
             this.positionChangedListener = listener;
         }
     }
 
     public static interface PositionChangedListener {
-        
+
         void positionChanged(Knob knob, int oldPosition, int newPosition);
-        
+
     }
 }

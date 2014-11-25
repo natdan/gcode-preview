@@ -19,6 +19,10 @@ import java.util.List;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class Component {
 
     protected int posX = 10;
@@ -146,7 +150,8 @@ public class Component {
     public boolean receiveTouchDown(int screenX, int screenY, int pointer, int button) {
         if (hasChildren()) {
             for (Component component : getChildren()) {
-                if (component.getX() <= screenX && component.getX() + component.getWidth() >= screenX
+                if (visible(component)
+                        && component.getX() <= screenX && component.getX() + component.getWidth() >= screenX
                         && component.getY() <= screenY && component.getY() + component.getHeight() >= screenY) {
                     selectedComponent = component;
                     boolean res = component.receiveTouchDown(screenX, screenY, pointer, button);
@@ -167,7 +172,8 @@ public class Component {
         }
         if (!res && hasChildren()) {
             for (Component component : getChildren()) {
-                if (component.getX() <= screenX && component.getX() + component.getWidth() >= screenX
+                if (visible(component)
+                        && component.getX() <= screenX && component.getX() + component.getWidth() >= screenX
                         && component.getY() <= screenY && component.getY() + component.getHeight() >= screenY) {
                     component.receiveTouchUp(screenX, screenY, pointer, button);
                     if (res) {
@@ -186,7 +192,8 @@ public class Component {
         }
         if (!res && hasChildren()) {
             for (Component component : getChildren()) {
-                if (component.getX() <= screenX && component.getX() + component.getWidth() >= screenX
+                if (visible(component)
+                        && component.getX() <= screenX && component.getX() + component.getWidth() >= screenX
                         && component.getY() <= screenY && component.getY() + component.getHeight() >= screenY) {
                     res = component.receiveTouchDragged(screenX, screenY, pointer);
                     if (res) {
@@ -225,7 +232,8 @@ public class Component {
         }
         if (!res && hasChildren()) {
             for (Component component : getChildren()) {
-                if (component.getX() <= screenX && component.getX() + component.getWidth() >= screenX
+                if (visible(component)
+                        && component.getX() <= screenX && component.getX() + component.getWidth() >= screenX
                         && component.getY() <= screenY && component.getY() + component.getHeight() >= screenY) {
                     if (mouseMoveComponent != null) {
                         mouseMoveComponent = null;
@@ -248,7 +256,8 @@ public class Component {
         }
         if (!res && hasChildren()) {
             for (Component component : getChildren()) {
-                if (component.getX() <= screenX && component.getX() + component.getWidth() >= screenX
+                if (visible(component)
+                        && component.getX() <= screenX && component.getX() + component.getWidth() >= screenX
                         && component.getY() <= screenY && component.getY() + component.getHeight() >= screenY) {
                     res = component.receiveScroll(screenX, screenY, amount);
                     if (res) {
@@ -258,6 +267,15 @@ public class Component {
             }
         }
         return res;
+    }
+
+    protected boolean visible(Component component) {
+        boolean visible = this.isVisible();
+        while (visible && component.getParent() != null) {
+            component = component.getParent();
+            visible = visible && component.isVisible();
+        }
+        return visible;
     }
 
     public static interface MouseOverListener {

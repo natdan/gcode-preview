@@ -29,6 +29,10 @@ import com.badlogic.gdx.graphics.g3d.shaders.BaseShader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class Renderer {
 
     private DefaultShaderProvider bottomShaderProvider;

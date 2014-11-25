@@ -27,6 +27,10 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class Layer {
 
     private float layerZOffset;

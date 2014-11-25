@@ -52,6 +52,10 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.TextureProvider.AssetTextureProvider;
 import com.badlogic.gdx.math.Vector3;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class GCodePreview extends ApplicationAdapter {
 
     public static final int SIXTY_FPS_FRAME = 1000 / 60;
@@ -83,13 +87,6 @@ public class GCodePreview extends ApplicationAdapter {
 
     private Console console;
 
-    private long[] fpsArray = new long[200];
-    private int fpsArrayStart = 0;
-    private int fpsArrayEnd = 0;
-    private String fps = "0.00";
-    private long fpsTimeToPrint;
-    private int FPS_REFRESH = 250;
-
     private Color lightColor;
 
     private GCodePreviewWindow window;
@@ -111,19 +108,24 @@ public class GCodePreview extends ApplicationAdapter {
         assetManager.load("arial-15.fnt", BitmapFont.class, bitmapFontParameter);
         assetManager.load("bed.png", Texture.class);
         assetManager.load("checked.png", Texture.class);
+
+
         assetManager.load("gui/slider-end-left.png", Texture.class);
         assetManager.load("gui/slider-end-right.png", Texture.class);
         assetManager.load("gui/slider-horizontal.png", Texture.class);
         assetManager.load("gui/slider-end-up.png", Texture.class);
         assetManager.load("gui/slider-end-down.png", Texture.class);
         assetManager.load("gui/slider-vertical.png", Texture.class);
-        assetManager.load("gui/ok-button-selected.png", Texture.class);
-        assetManager.load("gui/ok-button.png", Texture.class);
-        assetManager.load("gui/cancel-button-selected.png", Texture.class);
-        assetManager.load("gui/cancel-button.png", Texture.class);
-        assetManager.load("gui/three-circles-dark.png", Texture.class);
-        assetManager.load("gui/three-circles-light.png", Texture.class);
         assetManager.load("gui/knob.png", Texture.class);
+        prepareButtonImage(assetManager, "gui/ok");
+        prepareButtonImage(assetManager, "gui/cancel");
+        prepareButtonImage(assetManager, "gui/three-circles");
+        prepareButtonImage(assetManager, "gui/media/begin");
+        prepareButtonImage(assetManager, "gui/media/end");
+        prepareButtonImage(assetManager, "gui/media/play");
+        prepareButtonImage(assetManager, "gui/media/pause");
+        prepareButtonImage(assetManager, "gui/media/fast-forward");
+        prepareButtonImage(assetManager, "gui/media/fast-backward");
 
 
         textureProvider = new AssetTextureProvider(assetManager);
@@ -158,10 +160,14 @@ public class GCodePreview extends ApplicationAdapter {
         int height = Gdx.graphics.getHeight();
         window = new GCodePreviewWindow(0, 0, width, height);
         resize(width, height);
-        fpsArray[0] = System.currentTimeMillis();
-        fpsArrayEnd = 1;
 
         parser = new GCodeParser();
+    }
+
+    private void prepareButtonImage(AssetManager assetManager, String image) {
+        assetManager.load(image + ".png", Texture.class);
+        assetManager.load(image + "-over.png", Texture.class);
+        assetManager.load(image + "-selected.png", Texture.class);
     }
 
     @Override
@@ -277,7 +283,7 @@ public class GCodePreview extends ApplicationAdapter {
                 console.println("Max instrs per layer: " + gCodeModel.getMaxInstructionsPerLayer());
                 console.println();
 
-                playPanel.setVisible(false);
+//                playPanel.setVisible(false);
                 playPanel.refresh();
                 playPanel.text("Created meshes for all layers", 0);
 
@@ -287,11 +293,12 @@ public class GCodePreview extends ApplicationAdapter {
                 preparingMeshes = false;
 
                 controller.resetView();
+                controller.setCurrentLayer(0);
                 controller.setTwoDView();
             } else {
                 gCodeModel.processNextLayer();
             }
-            console.println("Processed " + gCodeModel.getCurrentLayerNo() + " meshes");
+//            console.println("Processed " + gCodeModel.getCurrentLayerNo() + " meshes");
         }
         if (preparingMeshes) {
             // While still preparing meshes
@@ -311,7 +318,6 @@ public class GCodePreview extends ApplicationAdapter {
 
         if (loadingAssets) {
         } else {
-            calcFps();
             if (parsingGCode) {
                 parseGCode();
             } else if (preparingMeshes) {
@@ -363,49 +369,6 @@ public class GCodePreview extends ApplicationAdapter {
 
         public NumberAttribute(long type, int value) {
             super(type, value);
-        }
-    }
-
-    public void calcFps() {
-        long now = System.currentTimeMillis();
-        fpsArray[fpsArrayEnd] = now;
-        long last = now;
-
-        int i = fpsArrayEnd;
-
-        fpsArrayEnd = fpsArrayEnd + 1;
-        if (fpsArrayEnd == fpsArray.length) { fpsArrayEnd = 0; }
-
-        int total = 0;
-        int n = 0;
-
-        while (i != fpsArrayStart && now - fpsArray[i] <= 1000) {
-            i = i - 1;
-            if (i < 0) { i = fpsArray.length - 1; }
-            total = total + (int)(last - fpsArray[i]);
-            last = fpsArray[i];
-            n = n + 1;
-        }
-
-        if (fpsArrayEnd == fpsArrayStart) {
-            fpsArrayStart = fpsArrayStart + 1;
-            if (fpsArrayStart == fpsArray.length) {
-                fpsArrayStart = 0;
-            }
-        }
-
-        int fpsi = 0;
-        if (total != 0) {
-            fpsi = 100000 * n / total;
-        }
-        fps = Integer.toString(fpsi); while (fps.length() < 2) { fps = "0" + fps; }
-        fps = fps.substring(0, fps.length() - 2) + "." + fps.substring(fps.length() - 2);
-
-        if (now - fpsTimeToPrint > FPS_REFRESH) {
-            fpsTimeToPrint = now;
-            Panel fpsPanel = window.getFPSPanel();
-            fpsPanel.refresh();
-            fpsPanel.text("fps: " + fps, 0);
         }
     }
 

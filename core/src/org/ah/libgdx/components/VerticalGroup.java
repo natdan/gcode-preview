@@ -2,7 +2,10 @@ package org.ah.libgdx.components;
 
 import java.util.List;
 
-
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class VerticalGroup extends Group {
 
     @Override

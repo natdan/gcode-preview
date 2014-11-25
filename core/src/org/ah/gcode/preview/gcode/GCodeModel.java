@@ -16,6 +16,10 @@ package org.ah.gcode.preview.gcode;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ * @author Daniel Sendula
+ */
 public class GCodeModel {
 
     private List<Layer> layers = new ArrayList<Layer>();
