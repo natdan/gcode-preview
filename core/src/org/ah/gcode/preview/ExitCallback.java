@@ -17,5 +17,5 @@ package org.ah.gcode.preview;
  * @author Daniel Sendula
  */
 public interface ExitCallback {
-    void exit();
+    void exit(boolean success);
 }

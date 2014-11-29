@@ -142,7 +142,7 @@ public class Renderer {
     public void renderProgress(Camera camera, Environment environment, List<Layer> layers, int startLayerNo, int currentLayerNo, boolean displayTopLayers) {
         solidModelBatch.begin(camera);
         float zOffset = 0;
-        if (readjustZOffset) {
+        if (readjustZOffset && layers.size() > 0) {
             Layer layer = layers.get(startLayerNo);
             zOffset = layer.getZOffset() - layer.getLayerHeight();
             zOffset = -zOffset;

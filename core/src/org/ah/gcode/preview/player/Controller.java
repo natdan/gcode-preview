@@ -34,6 +34,8 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 
+import org.ah.libgdx.components.Slider.PositionChangedListener;
+import org.ah.libgdx.components.Button.ButtonClicked;
 /**
  *
  * @author Daniel Sendula
@@ -92,10 +94,10 @@ public class Controller implements InputProcessor {
 
     private FPSCalculator fpsCalculator;
 
-    public Controller(GCodeModel gCodeModel,
+    public Controller(final GCodeModel gCodeModel,
             GCodePreviewWindow window,
             SceneCameraInputController sceneCameraInputController,
-            ExitCallback exitCallback) {
+            final ExitCallback exitCallback) {
         this.gCodeModel = gCodeModel;
         this.window = window;
         this.sceneCameraInputController = sceneCameraInputController;
@@ -105,16 +107,24 @@ public class Controller implements InputProcessor {
 
         horizontalSlider = window.getHorizontalSlider();
         horizontalKnob = horizontalSlider.getKnobs().get(0);
-        horizontalKnob.setPositionChangedListener(
-                (Knob knob, int oldPosition, int newPosition) ->
-                    playerRenderer.setCurrentInstructionNo(newPosition)
-            );
+        // TODO 1.8
+        horizontalKnob.setPositionChangedListener(new PositionChangedListener() {
+            @Override
+            public void positionChanged(Knob knob, int oldPosition, int newPosition) {
+                playerRenderer.setCurrentInstructionNo(newPosition);
+            }
+        });
+//                (Knob knob, int oldPosition, int newPosition) ->
+//                    playerRenderer.setCurrentInstructionNo(newPosition)
+//            );
 
         verticalSlider = window.getVerticalSlider();
         verticalKnob = verticalSlider.getKnobs().get(0);
+        // TODO 1.8
         verticalKnob.setPositionChangedListener(
-                (Knob knob, int oldPosition, int newPosition) ->
-                    {
+                new PositionChangedListener() {
+                    @Override
+                    public void positionChanged(Knob knob, int oldPosition, int newPosition) {
                         int layerNo = newPosition;
                         if (layerNo > gCodeModel.getLayers().size()) {
                             layerNo = gCodeModel.getLayers().size();
@@ -122,15 +132,31 @@ public class Controller implements InputProcessor {
                         if (layerNo < 0) { layerNo = 0; }
                         setCurrentLayer(layerNo);
                     }
-            );
+                });
+//                (Knob knob, int oldPosition, int newPosition) ->
+//                    {
+//                        int layerNo = newPosition;
+//                        if (layerNo > gCodeModel.getLayers().size()) {
+//                            layerNo = gCodeModel.getLayers().size();
+//                        }
+//                        if (layerNo < 0) { layerNo = 0; }
+//                        setCurrentLayer(layerNo);
+//                    }
+//            );
 
-        window.getOKButton().registerButtonClickedListener(
-                (Button button) -> exitCallback.exit()
-            );
+        // TODO 1.8
+        window.getOKButton().registerButtonClickedListener(new ButtonClicked() {
+            @Override public void buttonClicked(Button button) {exitCallback.exit(true); }
+        });
+//                (Button button) -> exitCallback.exit()
+//            );
 
-        window.getCancelButton().registerButtonClickedListener(
-                (Button button) -> exitCallback.exit()
-            );
+        // TODO 1.8
+        window.getCancelButton().registerButtonClickedListener(new ButtonClicked() {
+            @Override public void buttonClicked(Button button) { exitCallback.exit(false); }
+        });
+//                (Button button) -> exitCallback.exit()
+//            );
 
         leftPanel = window.getLeftPanel();
         console = window.getConsole();
@@ -140,12 +166,16 @@ public class Controller implements InputProcessor {
         middleY = gCodeModel.getBedHeight() / 2;
         sceneCameraInputController.resetToCentre(middleX, middleY);
 
-        window.getTwoDButton().registerButtonClickedListener((Button b) -> {
-            setTwoDView();
+        window.getTwoDButton().registerButtonClickedListener(new ButtonClicked() {
+            @Override public void buttonClicked(Button button) { setTwoDView(); }
         });
-        window.getThreeDButton().registerButtonClickedListener((Button b) -> {
-            displayAll();
+//            (Button b) -> setTwoDView()
+//        );
+        window.getThreeDButton().registerButtonClickedListener(new ButtonClicked() {
+            @Override public void buttonClicked(Button button) { displayAll(); }
         });
+//            (Button b) -> displayAll()
+//        );
     }
 
     public Component getLeftPanel() { return leftPanel; }
@@ -169,7 +199,7 @@ public class Controller implements InputProcessor {
     public boolean keyDown(int keycode) {
         if (keycode == Keys.ESCAPE) {
             if (exitCallback != null) {
-                exitCallback.exit();
+                exitCallback.exit(true);
             }
         }
         if (keycode == Keys.LEFT) {

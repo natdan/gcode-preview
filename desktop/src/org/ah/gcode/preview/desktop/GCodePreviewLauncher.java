@@ -13,6 +13,9 @@
  *******************************************************************************/
 package org.ah.gcode.preview.desktop;
 
+import java.awt.Canvas;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -22,7 +25,9 @@ import java.io.OutputStream;
 import java.util.List;
 
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 
+import org.ah.gcode.preview.ExitCallback;
 import org.ah.gcode.preview.GCodePreview;
 import org.ah.gcode.preview.utils.Files;
 
@@ -38,7 +43,6 @@ public class GCodePreviewLauncher {
     public static LwjglApplication app;
 
     public static void main(String[] args) {
-
         File gcodeFile = null;
         if (args.length > 1) {
             System.err.println("At the moment only one argument is allowed.");
@@ -50,7 +54,6 @@ public class GCodePreviewLauncher {
             gcodeFile = chooseFile();
         }
 
-        GCodePreview gCodePreview = new GCodePreview();
 
         // String fileName = "even-smaller-test.gcode";
         // String fileName = "small-test.gcode";
@@ -63,6 +66,12 @@ public class GCodePreviewLauncher {
             System.err.println("File does not exist: " + gcodeFile.getAbsolutePath());
             System.exit(1);
         }
+
+        startApp(gcodeFile, true);
+    }
+
+    public static boolean startApp(File gcodeFile, boolean forceExit) {
+        GCodePreview gCodePreview = new GCodePreview();
 
 //        FileHandle gcodeFile = Gdx.files.internal(fileName);
         try {
@@ -79,12 +88,82 @@ public class GCodePreviewLauncher {
             System.exit(1);
         }
 
-        gCodePreview.setExitCallback(() -> app.exit());
+        final BooleanBox res = new BooleanBox();
+
+        // TODO 1.8
+        gCodePreview.setExitCallback(new ExitCallback() {
+            @Override public void exit(boolean success) {
+                res.set(success);
+                app.exit();
+            }
+        });
+//            () -> app.exit()
+//        );
+
 
         LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
+        config.forceExit = forceExit;
         config.width = 1024;
         config.height = 768;
-        app = new LwjglApplication(gCodePreview, config);
+
+        Canvas canvas = new Canvas();
+
+        final JFrame frame = new JFrame();
+        frame.setSize(1024, 768);
+        if (forceExit) {
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        }
+        frame.setLocationRelativeTo(null);
+        frame.add(canvas);
+        frame.setVisible(true);
+        frame.addWindowListener(new WindowListener() {
+            @Override public void windowOpened(WindowEvent e) { }
+            @Override public void windowIconified(WindowEvent e) {}
+            @Override public void windowDeiconified(WindowEvent e) { }
+            @Override public void windowDeactivated(WindowEvent e) { }
+            @Override public void windowClosing(WindowEvent e) { }
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                res.set(true);
+                app.exit();
+            }
+
+            @Override public void windowActivated(WindowEvent e) { }
+        });
+
+        app = new LwjglApplication(gCodePreview, config, canvas);
+
+        Thread threadKeepToFront = new Thread(new Runnable() {
+            @Override public void run() {
+                long startedAt = System.currentTimeMillis();
+                sleep(3000);
+                while (!res.received && System.currentTimeMillis() - startedAt < 5100) {
+                    sleep(500);
+                    if (!res.received) {
+                        frame.setAlwaysOnTop(true);
+                        frame.toFront();
+                        frame.requestFocus();
+                        frame.setAlwaysOnTop(false);
+                    }
+                }
+            }
+        });
+
+        threadKeepToFront.start();
+
+        boolean r = res.get();
+
+        frame.setVisible(false);
+        frame.dispose();
+
+        return r;
+    }
+
+    public static void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ignore) { }
     }
 
     public static File chooseFile() {
@@ -156,5 +235,29 @@ public class GCodePreviewLauncher {
         } catch (Throwable ignore) {}
 
         return null;
+    }
+
+    private static class BooleanBox {
+        private boolean b;
+        private boolean received = false;
+
+        public void set(boolean b) {
+            synchronized (this) {
+                this.b = b;
+                received = true;
+                notifyAll();
+            }
+        }
+        public boolean get() {
+            synchronized (this) {
+                while (!received) {
+                    try {
+                        wait(10000);
+                    } catch (InterruptedException ignore) { }
+                }
+            }
+            return b;
+        }
+
     }
 }

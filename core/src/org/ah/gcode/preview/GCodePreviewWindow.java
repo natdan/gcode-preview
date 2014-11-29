@@ -25,6 +25,7 @@ import org.ah.libgdx.components.Slider;
 import org.ah.libgdx.components.VerticalGroup;
 import org.ah.libgdx.components.VerticalSlider;
 import org.ah.libgdx.components.Window;
+import org.ah.libgdx.components.Button.ButtonClicked;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g3d.utils.TextureProvider;
@@ -87,7 +88,12 @@ public class GCodePreviewWindow extends Window {
         hideSliderPanel.refresh();
         addChild(hideSliderPanel);
         hideSliderPanelButton = createButton(textureProvider,"gui/three-circles", false);
-        hideSliderPanelButton.registerButtonClickedListener((Button button) -> leftPanel.setVisible(!leftPanel.isVisible()));
+        hideSliderPanelButton.registerButtonClickedListener(new ButtonClicked() {
+            @Override public void buttonClicked(Button button) { leftPanel.setVisible(!leftPanel.isVisible()); }
+        });
+
+//                (Button button) -> leftPanel.setVisible(!leftPanel.isVisible())
+//         );
         addChild(hideSliderPanelButton);
 
         horizontalSlider = new HorizontalSlider(textureProvider);
@@ -107,7 +113,13 @@ public class GCodePreviewWindow extends Window {
         okCancelGroup.addChild(cancelButton);
         okCancelGroup.addChild(okButton);
         addChild(okCancelGroup);
-        okCancelGroup.registerMouseOverListener(this::mouseOverListener);
+        okCancelGroup.registerMouseOverListener(new MouseOverListener() {
+            @Override public void mouseOver(Component component, int x, int y, boolean mouseOver) {
+                mouseOverListener(component, x, y, mouseOver);
+            }
+
+        });
+//                this::mouseOverListener);
 
         twoDButton = createTextButton(font, " 2D  ");
         addChild(twoDButton);
