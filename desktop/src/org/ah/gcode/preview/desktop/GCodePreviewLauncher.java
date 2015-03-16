@@ -105,6 +105,7 @@ public class GCodePreviewLauncher {
         config.forceExit = forceExit;
         config.width = 1024;
         config.height = 768;
+        config.disableAudio = true;
 
         Canvas canvas = new Canvas();
 
