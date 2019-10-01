@@ -37,6 +37,7 @@ public class GCodeParser {
     private Layer currentLayer;
     private int currentLine = 0;
 
+    private boolean moveRelative;
     private boolean extrudeRelative;
     private boolean dcExtrude;
     private boolean assumeNonDC;
@@ -77,6 +78,7 @@ public class GCodeParser {
 
         detectedSlicer = DetectedSlicer.Unknown;
 
+        moveRelative = false;
         extrudeRelative = false;
         dcExtrude = false;
         assumeNonDC = false;
@@ -218,6 +220,11 @@ public class GCodeParser {
                 }
 
                 if (gotCoordinates) {
+                    if (moveRelative) {
+                        x = x + currentPosition.x;
+                        y = y + currentPosition.y;
+                        z = z + currentPosition.z;
+                    }
                     if (x == currentPosition.x && y == currentPosition.y && z != currentPosition.z) {
                     } else {
                         Point target = new Point(x, y, z);
@@ -244,9 +251,11 @@ public class GCodeParser {
             } else if ("M83".equals(command)) {
                 extrudeRelative = true;
             } else if ("G91".equals(command)) {
-                extrudeRelative = true;
+                moveRelative = true;
+                // extrudeRelative = true;
             } else if ("G90".equals(command)) {
-                extrudeRelative = false;
+                moveRelative = false;
+                // extrudeRelative = false;
             } else if ("M101".equals(command)) {
                 dcExtrude = true;
             } else if ("M103".equals(command)) {
